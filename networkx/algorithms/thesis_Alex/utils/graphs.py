@@ -50,6 +50,27 @@ def single_edge_graph():
     return G
 
 
+def triangle_longated():
+    G = nx.Graph()
+
+    edge_list = [('1', '2'), ('1', '3'), ('3', '4')]
+
+    for edge in edge_list:
+        G.add_edge(*edge)
+
+    return G
+
+
+def triangle_double_longated():
+    G = nx.Graph()
+
+    edge_list = [('1', '2'), ('1', '3'), ('3', '4'), ('4', '5')]
+
+    for edge in edge_list:
+        G.add_edge(*edge)
+
+    return G
+
 def square_longated():
     G = nx.Graph()
 
@@ -65,6 +86,27 @@ def incomplete_square():
     G = nx.Graph()
 
     edge_list = [('1', '2'), ('1', '4'), ('2', '3')]
+
+    for edge in edge_list:
+        G.add_edge(*edge)
+
+    return G
+
+
+def incomplete_triangle():
+    G = nx.Graph()
+
+    edge_list = [('1', '2'), ('1', '3')]
+
+    for edge in edge_list:
+        G.add_edge(*edge)
+
+    return G
+
+def complete_square():
+    G = nx.Graph()
+
+    edge_list = [('1', '2'), ('1', '4'), ('2', '3'), ('3', '4')]
 
     for edge in edge_list:
         G.add_edge(*edge)

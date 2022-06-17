@@ -13,9 +13,13 @@ __all__ = [
     "pretty_print",
 ]
 
-def compare_kourtellis_bc(G, edge):
+
+def compare_kourtellis_bc(G, edge, operation):
     G_new = copy.deepcopy(G)
-    G_new.add_edge(edge[0], edge[1])
+    if operation == "add":
+        G_new.add_edge(edge[0], edge[1])
+    else:
+        G_new.remove_edge(edge[0], edge[1])
 
     bc1 = nx.betweenness_centrality(G, normalized=False)
     print("bc1: {}\n".format(bc1))
@@ -23,13 +27,16 @@ def compare_kourtellis_bc(G, edge):
     bc2 = nx.betweenness_centrality(G_new, normalized=False)
     print("bc2: {}\n".format(bc2))
 
-    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, "add")
+    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, operation)
     print("bc3: {}\n\n".format(bc3))
 
 
-def compare_kourtellis_D(G, edge):
+def compare_kourtellis_D(G, edge, operation):
     G_new = copy.deepcopy(G)
-    G_new.add_edge(edge[0], edge[1])
+    if operation == "add":
+        G_new.add_edge(edge[0], edge[1])
+    else:
+        G_new.remove_edge(edge[0], edge[1])
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     print("D1:")
@@ -39,14 +46,17 @@ def compare_kourtellis_D(G, edge):
     print("D2:")
     pretty_print(D2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, "add")
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
     print("D3:")
     pretty_print(D3)
 
 
-def compare_kourtellis_SP(G, edge):
+def compare_kourtellis_SP(G, edge, operation):
     G_new = copy.deepcopy(G)
-    G_new.add_edge(edge[0], edge[1])
+    if operation == "add":
+        G_new.add_edge(edge[0], edge[1])
+    else:
+        G_new.remove_edge(edge[0], edge[1])
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     print("SP1:")
@@ -56,14 +66,17 @@ def compare_kourtellis_SP(G, edge):
     print("SP2:")
     pretty_print(SP2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, "add")
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
     print("SP3:")
     pretty_print(SP3)
 
 
-def compare_kourtellis_Delta(G, edge):
+def compare_kourtellis_Delta(G, edge, operation):
     G_new = copy.deepcopy(G)
-    G_new.add_edge(edge[0], edge[1])
+    if operation == "add":
+        G_new.add_edge(edge[0], edge[1])
+    else:
+        G_new.remove_edge(edge[0], edge[1])
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     print("Delta 1:")
@@ -73,19 +86,23 @@ def compare_kourtellis_Delta(G, edge):
     print("Delta 2:")
     pretty_print(Delta2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, "add")
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
     print("Delta 3:")
     pretty_print(Delta3)
 
 
-def compare_kourtellis_no_print(G, edge):
+def compare_kourtellis_no_print(G, edge, operation):
     G_new = copy.deepcopy(G)
+    if operation == "add":
+        G_new.add_edge(edge[0], edge[1])
+    else:
+        G_new.remove_edge(edge[0], edge[1])
 
     bc1 = nx.betweenness_centrality(G, normalized=False)
 
     bc2 = nx.betweenness_centrality(G_new, normalized=False)
 
-    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, "add")
+    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, operation)
 
 
 def sort_dict(dictionary):
