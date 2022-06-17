@@ -15,6 +15,7 @@ class State(Enum):
     U = "ascending"
     N = "untouched"
     P = "pivot"
+    NP = "not a pivot"
 
 
 class Operation(Enum):
@@ -72,7 +73,7 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
                                     flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
 
             else:
-                if u_low.has_predecessors():  # 0 level drop
+                if has_predecessors(G, s, u_low, D):  # 0 level drop
                     bc, Dd, SPd, Delta_d, flag = \
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
                                     flag, bc, SP, SPd, Dd, Delta, Delta_d, operation)
@@ -173,8 +174,9 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
                     if flag[v] == State.U and (v != u_high or w != u_low):
                         Delta_d[v] -= a
+
             if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])
+                bc[w] += (Delta_d[w] - Delta[s][w])/2
 
         level -= 1
 
@@ -182,30 +184,31 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
 
 
 def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
-    PQ, Q_bfs = {}, deque([])  # mistake here must be handled, must be dict of lists
-    first = None  # don't understand this line yet
+    PQ, Q_bfs = defaultdict(collections.deque), deque([])
+    first = G.number_of_nodes()
     Q_bfs.append(u_low)
-    flag[u_low] = State.N
+    flag[u_low] = State.NP
     while Q_bfs:
         v = Q_bfs.popleft()
         for w in G[v]:  # adjacent nodes
             if D[s][w] + 1 == D[s][v] and flag[w] == State.N and flag[v] != State.P:
-                PQ[D[s][v]], flag[v] = v, State.P  # a new pivot
+                PQ[Dd[v]], flag[v] = v, State.P  # a new pivot
                 if first > D[s][v]:
                     first = D[s][v]  # the first pivot
             elif D[s][w] == D[s][v] + 1 or D[s][w] == D[s][v]:
                 if flag[w] == State.N:
                     Q_bfs.append(w)
-                    flag[w] = State.N
-    if not PQ.is_empty():  # don't quite understand yet
-        algorithm_7()
-    elif PQ.is_empty():  # don't quite understand yet
-        print("adjust appropriately for disconnected components")
+                    flag[w] = State.NP
+    if PQ:  # don't quite understand yet
+        bc, Dd, SPd, Delta_d, flag = algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
+        return bc, Dd, SPd, Delta_d, flag
+    else:  # don't quite understand yet
+        algorithm_10()
 
 
 def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first):
     Q_bfs = deque([])
-    Q_bfs.append(PQ[first])
+    Q_bfs.extend(PQ[first])
     nxt = first + 1
     while Q_bfs:
         v = Q_bfs.popleft()
@@ -228,7 +231,7 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                         flag[w] = State.D
                         Q_lvl[Dd[w]].append(w)
                         Q_bfs.append(w)
-    Delta_d[u_high] = Delta[s][u_high] - (SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low])
+    Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
     level = G.number_of_nodes()
@@ -236,18 +239,22 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
             for v in G[w]:  # adjacent nodes
-                a = 0
                 if Dd[v] < Dd[w]:  # be mindful of order of v, w in alg 3
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
-                if D[s][w] > D[s][v]:
-                    a = (SP[s][v]/SP[s][w]) * (1 + Delta[s][w])
-                elif D[s][w] < D[s][v]:
-                    a = (SP[s][w] / SP[s][v]) * (1 + Delta[s][v])
-                if flag[v] == State.U:
-                    Delta_d[v] -= a
+                    a = 0
+                    if D[s][w] > D[s][v]:
+                        a = (SP[s][v]/SP[s][w]) * (1 + Delta[s][w])
+                    elif D[s][w] < D[s][v]:
+                        a = (SP[s][w] / SP[s][v]) * (1 + Delta[s][v])
+                    if flag[v] == State.U:
+                        Delta_d[v] -= a
             if w != s:
                 bc[w] += (Delta_d[w] - Delta[s][w])
         level -= 1
+    return bc, Dd, SPd, Delta_d, flag
+
+def algorthm_10():
+    return None
 
 
 def find_lowest_highest(G, s, u_1, u_2, D, SP):
@@ -270,3 +277,10 @@ def find_lowest_highest(G, s, u_1, u_2, D, SP):
             D[s][u_1], D[s][u_2] = float('inf'), float('inf')  # incoming edge has two new nodes
             SP[s][u_1], SP[s][u_2] = 0, 0
             return u_2, u_1, D, SP
+
+
+def has_predecessors(G, s, u_low, D):
+    for v in G[u_low]:
+        if D[s][v] < D[s][u_low]:
+            return True
+    return False
