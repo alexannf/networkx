@@ -73,12 +73,12 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
                                     flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
 
             else:
-                if has_predecessors(G, s, u_low, D):  # 0 level drop
+                if has_predecessors(G, s, u_low, u_high, D):  # 0 level drop
                     bc, Dd, SPd, Delta_d, flag = \
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
                                     flag, bc, SP, SPd, Dd, Delta, Delta_d, operation)
                 else:  # 1 or more level drop
-                    algorithm_6()
+                    algorithm_6(G_new, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
 
         for r in G_new:
             SP[s][r], D[s][r] = SPd[r], Dd[r]
@@ -199,7 +199,7 @@ def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                 if flag[w] == State.N:
                     Q_bfs.append(w)
                     flag[w] = State.NP
-    if PQ:  # don't quite understand yet
+    if PQ:
         bc, Dd, SPd, Delta_d, flag = algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
         return bc, Dd, SPd, Delta_d, flag
     else:  # don't quite understand yet
@@ -212,34 +212,34 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
     nxt = first + 1
     while Q_bfs:
         v = Q_bfs.popleft()
-        flag[v], SPd[v] = State.D, 0  # must be fixed
+        flag[v], SPd[v] = State.D, 0
         Q_lvl[Dd[v]].append(v)
         if nxt == Dd[v] + 1:
-            Q_bfs.append(PQ[nxt])  # don't understand this line yet
+            Q_bfs.extend(PQ[nxt])
             nxt += 1
         for w in G[v]:  # adjacent nodes
-            if flag[w] == State.N:
+            if flag[w] == State.NP:
                 flag[w], Dd[w] = State.D, Dd[v] + 1
                 Q_bfs.append(w)
             elif flag[w] == State.P:
                 flag[w] = State.D
             else:
                 if Dd[w] + 1 == Dd[v]:
-                    SPd[v] += SPd[v]
+                    SPd[v] += SPd[w]
                 if Dd[w] == Dd[v] and D[s][w] != D[s][v]:
                     if D[s][w] > D[s][v] and flag[w] != State.D:
                         flag[w] = State.D
                         Q_lvl[Dd[w]].append(w)
                         Q_bfs.append(w)
-    Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
+    Delta_d[u_high] = Delta[s][u_high] - ((SPd[u_high]/SPd[u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
     level = G.number_of_nodes()
     while level:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
-            for v in G[w]:  # adjacent nodes
-                if Dd[v] < Dd[w]:  # be mindful of order of v, w in alg 3
+            for v in G[w]:
+                if Dd[v] < Dd[w]:
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
                     a = 0
                     if D[s][w] > D[s][v]:
@@ -249,11 +249,12 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     if flag[v] == State.U:
                         Delta_d[v] -= a
             if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])
+                bc[w] += (Delta_d[w] - Delta[s][w])/2
         level -= 1
     return bc, Dd, SPd, Delta_d, flag
 
-def algorthm_10():
+
+def algorithm_10():
     return None
 
 
@@ -279,8 +280,8 @@ def find_lowest_highest(G, s, u_1, u_2, D, SP):
             return u_2, u_1, D, SP
 
 
-def has_predecessors(G, s, u_low, D):
+def has_predecessors(G, s, u_low, u_high, D):
     for v in G[u_low]:
-        if D[s][v] < D[s][u_low]:
+        if D[s][v] < D[s][u_low] and v != u_high:
             return True
     return False
