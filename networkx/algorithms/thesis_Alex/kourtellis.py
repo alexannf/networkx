@@ -16,6 +16,7 @@ class State(Enum):
     N = "untouched"
     P = "pivot"
     NP = "not a pivot"
+    M = "disconnected"
 
 
 class Operation(Enum):
@@ -34,7 +35,7 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
     if not (operation == "add" or operation == "delete"):
         raise TypeError("edge operation must be add or delete")
 
-    Dd, SPd, Delta_d, flag = {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
+    bc_d, Dd, SPd, Delta_d, flag = {}, {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
 
     G_new = copy.deepcopy(G)
     if operation == "add":
@@ -78,12 +79,15 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
                                     flag, bc, SP, SPd, Dd, Delta, Delta_d, operation)
                 else:  # 1 or more level drop
-                    algorithm_6(G_new, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
+                    bc, Dd, SPd, Delta_d, flag = \
+                        algorithm_6(G_new, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
 
         for r in G_new:
             SP[s][r], D[s][r] = SPd[r], Dd[r]
             if flag[r] != State.N:
                 Delta[s][r] = Delta_d[r]
+
+        # print_datastructures(s, bc, D, SP, )
 
     return G_new, bc, D, SP, Delta
 
@@ -200,10 +204,13 @@ def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     Q_bfs.append(w)
                     flag[w] = State.NP
     if PQ:
-        bc, Dd, SPd, Delta_d, flag = algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
+        bc, Dd, SPd, Delta_d, flag = \
+            algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
         return bc, Dd, SPd, Delta_d, flag
     else:  # don't quite understand yet
-        algorithm_10()
+        bc, Dd, SPd, Delta_d, flag = \
+            algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
+        return bc, Dd, SPd, Delta_d, flag
 
 
 def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first):
@@ -235,7 +242,7 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
     level = G.number_of_nodes()
-    while level:
+    while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
             for v in G[w]:
@@ -254,8 +261,36 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
     return bc, Dd, SPd, Delta_d, flag
 
 
-def algorithm_10():
-    return None
+def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
+    Q_bfs = deque(u_low)
+    Dd[u_low], SPd[u_low], Delta_d[u_low] = -1, 0, 0
+
+    while Q_bfs:
+        v = Q_bfs.popleft()
+        for w in G[v]:  # adjacent nodes
+            if D[s][w] == D[s][v] + 1:
+                if flag[w] == State.NP:
+                    Q_bfs.append(w)
+                    flag[w] = State.M
+                    Dd[w], SPd[w], Delta_d[w] = -1, 0, 0
+                bc[v] -= ((SP[s][v]/SP[s][w]) * (1.0 + Delta[s][w]))/2
+
+    Delta_d[u_high] = 0
+    Q_lvl[Dd[u_high]].append(u_high)
+    flag[u_high] = State.U
+    level = G.number_of_nodes()
+    while level > 0:
+        while Q_lvl[level]:
+            w = Q_lvl[level].pop()
+            for v in G[w]:
+                if Dd[v] < Dd[w]:
+                    flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
+                    if flag[v] == State.U:
+                        Delta_d[v] -= a
+            if w != s:
+                bc[w] += (Delta_d[w] - Delta[s][w])/2
+        level -= 1
+    return bc, Dd, SPd, Delta_d, flag
 
 
 def find_lowest_highest(G, s, u_1, u_2, D, SP):
@@ -285,3 +320,17 @@ def has_predecessors(G, s, u_low, u_high, D):
         if D[s][v] < D[s][u_low] and v != u_high:
             return True
     return False
+
+
+def print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
+    if bc:
+        print("s  = {}, bc = {}".format(s, bc))
+
+    if D:
+        print("s  = {}, D[s] = {}".format(s, D[s]))
+
+    if SP:
+        print("s  = {}, SP[s] = {}".format(s, SP[s]))
+
+    if Delta:
+        print("s  = {}, Delta[s] = {}".format(s, Delta[s]))

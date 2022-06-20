@@ -65,7 +65,7 @@ def batagelj_distances_shortest_paths(G, weight="weight"):
 
 def batagelj_calculate_betweenness(G, dist_mtrx, sp_mtrx):
 
-    BC_G = dict.fromkeys(G.nodes(), 0)
+    BC_G = dict.fromkeys(G.nodes(), 0.0)
 
     for v in G:
         d_mtrx_v, sp_mtrx_v = dist_mtrx[v], sp_mtrx[v]  # save recomputation
@@ -82,7 +82,7 @@ def batagelj_calculate_betweenness(G, dist_mtrx, sp_mtrx):
 
 def batagelj_calculate_group_betweenness(G, C, dist_mtrx, sp_mtrx):
 
-    GBC = 0
+    GBC = 0.0
     for s in G:
         d_mtrx_s, sp_mtrx_s = dist_mtrx[s], sp_mtrx[s]  # save recomputation
         for t in G:

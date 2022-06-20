@@ -115,10 +115,22 @@ def incomplete_triangle():
 
     return G
 
+
 def complete_square():
     G = nx.Graph()
 
     edge_list = [('1', '2'), ('1', '4'), ('2', '3'), ('3', '4')]
+
+    for edge in edge_list:
+        G.add_edge(*edge)
+
+    return G
+
+
+def line_length_5():
+    G = nx.Graph()
+
+    edge_list = [('1', '2'), ('2', '3'), ('3', '4'), ('4', '5'), ('5', '6')]
 
     for edge in edge_list:
         G.add_edge(*edge)
