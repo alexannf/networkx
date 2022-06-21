@@ -1,4 +1,3 @@
-import collections
 import math
 from collections import deque, defaultdict
 import networkx as nx
@@ -9,6 +8,7 @@ import pprint
 
 __all__ = [
     "kourtellis_dynamic_bc",
+    "algorithm_1",
 ]
 
 
@@ -34,6 +34,12 @@ def kourtellis_dynamic_bc(G, new_edge, operation):
 
 
 def algorithm_1(G, bc, D, SP, Delta, edge, operation):
+    if nx.is_empty(G):
+        if operation == "remove":
+            raise TypeError("cannot remove an edge from an empty graph")
+        G_new, bc, D, SP, Delta = initialize_graph(G, edge)
+        return G_new, bc, D, SP, Delta
+
     if not (operation == "add" or operation == "remove"):
         raise TypeError("edge operation must be add or remove")
 
@@ -47,11 +53,9 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
             raise NetworkXUnfeasible("edge {} is not in G and cannot be removed".format(edge))
         G_new.remove_edge(edge[0], edge[1])  # island node(s) will still exist in G but not affect computation
 
-    # print("before algo starts, bc[1] = {}, bc[2] = {}".format(bc['1'], bc['2']))
-
     for s in G_new:
 
-        u_high, u_low, D, SP = find_lowest_highest(G, s, edge[0], edge[1], D, SP)
+        u_high, u_low, D, SP, Delta = find_lowest_highest(G, s, edge[0], edge[1], D, SP, Delta)
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
 
         if dd == 0:
@@ -61,7 +65,7 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
             for r in G:
                 Dd[r], SPd[r], Delta_d[r] = D[s][r], SP[s][r], 0  # initialize dynamic data structures
                 flag[r] = State.N
-            Q_lvl = defaultdict(collections.deque)
+            Q_lvl = defaultdict(deque)
             Q_bfs = deque([u_low])  # add the node which is the edge endpoint furthest away from source s
 
             if operation == "add":
@@ -88,8 +92,6 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
             SP[s][r], D[s][r] = SPd[r], Dd[r]
             if flag[r] != State.N:
                 Delta[s][r] = Delta_d[r]
-
-        print("s = {}, bc[1] = {}, bc[2] = {}".format(s, bc['1'], bc['2']))
 
         # pretty_print_datastructures(s, bc, D, SP, Delta)
 
@@ -192,7 +194,7 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
 
 
 def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
-    PQ, Q_bfs = defaultdict(collections.deque), deque([])
+    PQ, Q_bfs = defaultdict(deque), deque([])
     first = G.number_of_nodes()
     Q_bfs.append(u_low)
     flag[u_low] = State.NP
@@ -283,7 +285,7 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
                     Dd[w], SPd[w], Delta_d[w] = -1, 0, 0
                 bc[v] -= ((SP[s][v]/SP[s][w]) * (1 + Delta[s][w]))/2
 
-    Delta_d[u_high] = 0
+    Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
     level = G.number_of_nodes()
@@ -301,26 +303,30 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
     return bc, Dd, SPd, Delta_d, flag
 
 
-def find_lowest_highest(G, s, u_1, u_2, D, SP):
+def find_lowest_highest(G, s, u_1, u_2, D, SP, Delta):
     if G.has_node(u_1) and G.has_node(u_2):
         if D[s][u_1] < D[s][u_2]:
-            return u_1, u_2, D, SP
+            return u_1, u_2, D, SP, Delta
         else:
-            return u_2, u_1, D, SP
+            return u_2, u_1, D, SP, Delta
 
     else:
         if G.has_node(u_1):
             D[s][u_2] = D[s][u_1] + 1  # new node added, 1 distance further away than u_1
             SP[s][u_2] = SP[s][u_1]  # new node added, inherits the shortest path from tail of endpoint
-            return u_1, u_2, D, SP
+            Delta[s][u_2] = 0  # new node is a leaf node and has a zero contribution to the source dependency
+            return u_1, u_2, D, SP, Delta
         elif G.has_node(u_2):
             D[s][u_1] = D[s][u_2] + 1  # new node added, 1 distance further away than u_2
             SP[s][u_1] = SP[s][u_2]  # new node added, inherits the shortest path from tail of endpoint
-            return u_2, u_1, D, SP
+            Delta[s][u_1] = 0  # new node is a leaf node and has a zero contribution to the source dependency
+            return u_2, u_1, D, SP, Delta
         else:
-            D[s][u_1], D[s][u_2] = float('inf'), float('inf')  # incoming edge has two new nodes
+            # TODO: implement correct functionality when s is either of the endpoints
+            D[s][u_1], D[s][u_2] = -1, -1  # incoming edge has two new nodes
             SP[s][u_1], SP[s][u_2] = 0, 0
-            return u_2, u_1, D, SP
+            Delta[s][u_1], Delta[s][u_2] = 0, 0
+            return u_2, u_1, D, SP, Delta
 
 
 def has_predecessors(G, s, u_low, u_high, D):
@@ -328,6 +334,25 @@ def has_predecessors(G, s, u_low, u_high, D):
         if D[s][v] < D[s][u_low] and v != u_high:
             return True
     return False
+
+
+def initialize_graph(G, edge):
+    G.add_edge(edge[0], edge[1])
+    bc = dict.fromkeys(G, 0.0)
+    D = defaultdict(dict)
+    SP = defaultdict(dict)
+    Delta = defaultdict(dict)
+
+    D[edge[0]][edge[0]], D[edge[1]][edge[1]] = 0, 0
+    D[edge[0]][edge[1]], D[edge[1]][edge[0]] = 1, 1
+
+    SP[edge[0]][edge[0]], SP[edge[1]][edge[1]] = 1, 1
+    SP[edge[0]][edge[1]], SP[edge[1]][edge[0]] = 1, 1
+
+    Delta[edge[0]][edge[0]], Delta[edge[1]][edge[1]] = 1, 1
+    Delta[edge[0]][edge[1]], Delta[edge[1]][edge[0]] = 0, 0
+
+    return G, bc, D, SP, Delta
 
 
 def print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
