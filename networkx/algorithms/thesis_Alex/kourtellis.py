@@ -4,6 +4,7 @@ import networkx as nx
 from networkx.exception import NetworkXUnfeasible
 import copy
 from enum import Enum
+import pprint
 
 __all__ = [
     "kourtellis_dynamic_bc",
@@ -21,7 +22,7 @@ class State(Enum):
 
 class Operation(Enum):
     A = "add"
-    D = "delete"
+    D = "remove"
 
 
 def kourtellis_dynamic_bc(G, new_edge, operation):
@@ -32,20 +33,24 @@ def kourtellis_dynamic_bc(G, new_edge, operation):
 
 
 def algorithm_1(G, bc, D, SP, Delta, edge, operation):
-    if not (operation == "add" or operation == "delete"):
-        raise TypeError("edge operation must be add or delete")
+    if not (operation == "add" or operation == "remove"):
+        raise TypeError("edge operation must be add or remove")
 
-    bc_d, Dd, SPd, Delta_d, flag = {}, {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
+    Dd, SPd, Delta_d, flag = {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
 
     G_new = copy.deepcopy(G)
     if operation == "add":
         G_new.add_edge(edge[0], edge[1])  # will add new node(s) to G based on endpoints in new edge
     else:
         if not G.has_edge(edge[0], edge[1]):
-            raise NetworkXUnfeasible("edge {} is not in G and cannot be deleted".format(edge))
+            raise NetworkXUnfeasible("edge {} is not in G and cannot be removed".format(edge))
         G_new.remove_edge(edge[0], edge[1])  # island node(s) will still exist in G but not affect computation
 
+    # print("before algo starts, bc[1] = {}, bc[2] = {}".format(bc['1'], bc['2']))
+
     for s in G_new:
+        if s == '10':
+            print("investigate")
 
         u_high, u_low, D, SP = find_lowest_highest(G, s, edge[0], edge[1], D, SP)
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
@@ -54,8 +59,6 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
             continue  # same level addition/deletion
 
         if dd >= 1:
-            Dd[u_high], Dd[u_low] = D[s][u_high], D[s][u_low]
-            SPd[u_high], SPd[u_low] = SP[s][u_high], SP[s][u_low]
             for r in G:
                 Dd[r], SPd[r], Delta_d[r] = D[s][r], SP[s][r], 0  # initialize dynamic data structures
                 flag[r] = State.N
@@ -87,7 +90,9 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
             if flag[r] != State.N:
                 Delta[s][r] = Delta_d[r]
 
-        # print_datastructures(s, bc, D, SP, )
+        print("s = {}, bc[1] = {}, bc[2] = {}".format(s, bc['1'], bc['2']))
+
+        # pretty_print_datastructures(s, bc, D, SP, Delta)
 
     return G_new, bc, D, SP, Delta
 
@@ -98,7 +103,7 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
     flag[u_low] = State.D
     if operation == "add":
         SPd[u_low] += SP[s][u_high]
-    if operation == "delete":
+    if operation == "remove":
         SPd[u_low] -= SP[s][u_high]
 
     while Q_bfs:
@@ -110,7 +115,7 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
                     flag[w] = State.D
                     Q_bfs.append(w)
                 SPd[w] += (SPd[v] - SP[s][v])
-    if operation == "delete":
+    if operation == "remove":
         Delta_d[u_high] = Delta[s][u_high] - (SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low])
         Q_lvl[Dd[u_high]].append(u_high)
         flag[u_high] = State.U
@@ -125,11 +130,11 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
                     if operation == "add":
                         if flag[v] == State.U and (v != u_high or w != u_low):
                             Delta_d[v] -= a  # if undiscovered, subtract the delta contribution from the old G
-                    if operation == "delete":
+                    if operation == "remove":
                         if flag[v] == State.U:
                             Delta_d[v] -= a
             if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])
+                bc[w] += (Delta_d[w] - Delta[s][w])/2
         level -= 1
 
     return bc, Dd, SPd, Delta_d, flag
@@ -141,8 +146,8 @@ def algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level):
         flag[v] = State.U
         Delta_d[v] = Delta[s][v]
         Q_lvl[level-1].append(v)
-    Delta_d[v] += (SPd[v]/SPd[w]) * (1.0 + Delta_d[w])
-    a = (SP[s][v]/SP[s][w]) * (1.0 + Delta[s][w])
+    Delta_d[v] += (SPd[v]/SPd[w]) * (1 + Delta_d[w])
+    a = (SP[s][v]/SP[s][w]) * (1 + Delta[s][w])
     return flag, Delta_d, Q_lvl, a
 
 
@@ -196,7 +201,8 @@ def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
         v = Q_bfs.popleft()
         for w in G[v]:  # adjacent nodes
             if D[s][w] + 1 == D[s][v] and flag[w] == State.N and flag[v] != State.P:
-                PQ[Dd[v]], flag[v] = v, State.P  # a new pivot
+                PQ[Dd[v]].append(v)
+                flag[v] = State.P  # a new pivot
                 if first > D[s][v]:
                     first = D[s][v]  # the first pivot
             elif D[s][w] == D[s][v] + 1 or D[s][w] == D[s][v]:
@@ -207,7 +213,7 @@ def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
         bc, Dd, SPd, Delta_d, flag = \
             algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
         return bc, Dd, SPd, Delta_d, flag
-    else:  # don't quite understand yet
+    else:
         bc, Dd, SPd, Delta_d, flag = \
             algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
         return bc, Dd, SPd, Delta_d, flag
@@ -238,13 +244,15 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                         flag[w] = State.D
                         Q_lvl[Dd[w]].append(w)
                         Q_bfs.append(w)
-    Delta_d[u_high] = Delta[s][u_high] - ((SPd[u_high]/SPd[u_low]) * (1 + Delta[s][u_low]))
+    Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
     level = G.number_of_nodes()
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
+            if w == '1':
+                print("investigate")
             for v in G[w]:
                 if Dd[v] < Dd[w]:
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
@@ -256,7 +264,7 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     if flag[v] == State.U:
                         Delta_d[v] -= a
             if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])/2
+                bc[w] += (Delta_d[w] - Delta[s][w]) / 2
         level -= 1
     return bc, Dd, SPd, Delta_d, flag
 
@@ -273,7 +281,7 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
                     Q_bfs.append(w)
                     flag[w] = State.M
                     Dd[w], SPd[w], Delta_d[w] = -1, 0, 0
-                bc[v] -= ((SP[s][v]/SP[s][w]) * (1.0 + Delta[s][w]))/2
+                bc[v] -= ((SP[s][v]/SP[s][w]) * (1 + Delta[s][w]))/2
 
     Delta_d[u_high] = 0
     Q_lvl[Dd[u_high]].append(u_high)
@@ -334,3 +342,21 @@ def print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
 
     if Delta:
         print("s  = {}, Delta[s] = {}".format(s, Delta[s]))
+
+
+def pretty_print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
+    if bc:
+        print("s  = {}, bc:".format(s))
+        pprint.pprint(bc)
+
+    if D:
+        print("s  = {}, D[s]:".format(s))
+        pprint.pprint([s])
+
+    if SP:
+        print("s  = {}, SP[s]:".format(s))
+        pprint.pprint(SP[s])
+
+    if Delta:
+        print("s  = {}, Delta[s]:".format(s))
+        pprint.pprint(Delta[s])
