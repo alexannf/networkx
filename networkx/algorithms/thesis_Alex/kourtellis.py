@@ -50,8 +50,6 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
     # print("before algo starts, bc[1] = {}, bc[2] = {}".format(bc['1'], bc['2']))
 
     for s in G_new:
-        if s == '10':
-            print("investigate")
 
         u_high, u_low, D, SP = find_lowest_highest(G, s, edge[0], edge[1], D, SP)
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
@@ -252,8 +250,6 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
-            if w == '1':
-                print("investigate")
             for v in G[w]:
                 if Dd[v] < Dd[w]:
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
