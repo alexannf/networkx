@@ -1,4 +1,5 @@
 import collections
+import math
 from collections import deque, defaultdict
 import networkx as nx
 from networkx.exception import NetworkXUnfeasible
@@ -264,7 +265,10 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     if flag[v] == State.U:
                         Delta_d[v] -= a
             if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w]) / 2
+                if math.isclose(0.0, round(bc[w], 4) + round(((Delta_d[w] - Delta[s][w]) / 2), 4)):
+                    bc[w] = 0.0
+                else:
+                    bc[w] += (Delta_d[w] - Delta[s][w]) / 2
         level -= 1
     return bc, Dd, SPd, Delta_d, flag
 
