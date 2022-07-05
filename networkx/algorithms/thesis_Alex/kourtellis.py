@@ -34,35 +34,50 @@ def kourtellis_dynamic_bc(G, new_edge, operation):
 
 
 def algorithm_1(G, bc, D, SP, Delta, edge, operation):
-    if nx.is_empty(G):
-        if operation == "remove":
-            raise TypeError("cannot remove an edge from an empty graph")
-        G_new, bc, D, SP, Delta = initialize_graph(G, edge)
-        return G_new, bc, D, SP, Delta
-
     if not (operation == "add" or operation == "remove"):
         raise TypeError("edge operation must be add or remove")
 
-    Dd, SPd, Delta_d, flag = {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
+    if nx.is_empty(G):
+        if operation == "remove":
+            raise TypeError("cannot remove an edge from an empty graph")
+        G_new, bc, D, SP, Delta = initialize_graph(G, edge[0], edge[1])
+        return G_new, bc, D, SP, Delta
 
+    u1, u2 = edge[0], edge[1]
+
+    if not (G.has_node(u1) or G.has_node(u2)):
+        bc, D, SP, Delta = both_nodes_new(G, u1, u2, bc, D, SP, Delta)
+        G.add_edge(u1, u2)
+        return G, bc, D, SP, Delta
+
+    Dd, SPd, Delta_d, flag = {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
     G_new = copy.deepcopy(G)
+
     if operation == "add":
-        G_new.add_edge(edge[0], edge[1])  # will add new node(s) to G based on endpoints in new edge
+        G_new.add_edge(u1, u2)
     else:
-        if not G.has_edge(edge[0], edge[1]):
+        if not G.has_edge(u1, u2):
             raise NetworkXUnfeasible("edge {} is not in G and cannot be removed".format(edge))
-        G_new.remove_edge(edge[0], edge[1])  # island node(s) will still exist in G but not affect computation
+        G_new.remove_edge(u1, u2)  # island node(s) will still exist in G but not affect computation
 
     for s in G_new:
 
-        u_high, u_low, D, SP, Delta = find_lowest_highest(G, s, edge[0], edge[1], D, SP, Delta)
+        D, Delta = init_missing_brandes(s, u1, u2, D, Delta)
+        u_high, u_low, new_node = find_lowest_highest(G, s, u1, u2, D)
+
+        if new_node:
+            bc, D, Dd, SP, SPd, Delta, Delta_d = \
+                update_datastructures(G, s, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d)
+
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
 
-        if dd == 0:
-            continue  # same level addition/deletion
+        if dd == 0 or (D[s][u_low] == float("inf") and D[s][u_high] == float("inf")):
+            continue  # same level addition/deletion or s is island node
 
         if dd >= 1:
             for r in G:
+                if r not in D[s]:
+                    D[s][r], Delta[s][r] = float("inf"), 0
                 Dd[r], SPd[r], Delta_d[r] = D[s][r], SP[s][r], 0  # initialize dynamic data structures
                 flag[r] = State.N
             Q_lvl = defaultdict(deque)
@@ -72,7 +87,7 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
                 if dd == 1:  # 0 level rise
                     bc, Dd, SPd, Delta_d, flag = \
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
-                                    flag, bc, SP, SPd, Dd, Delta, Delta_d, operation)
+                                    flag, bc, SP, SPd, Dd, Delta, Delta_d, operation, new_node)
 
                 if dd > 1:  # 1 or more level rise
                     bc, Dd, SPd, Delta_d, flag = \
@@ -99,10 +114,10 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
 
 
 # is run when the distances of the endpoints of an added/deleted edge differ with exactly one (with respect to s)
-def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta, Delta_d, operation):
+def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta, Delta_d, operation, new_node=False):
     Q_lvl[Dd[u_low]].append(u_low)
     flag[u_low] = State.D
-    if operation == "add":
+    if operation == "add" and not new_node:
         SPd[u_low] += SP[s][u_high]
     if operation == "remove":
         SPd[u_low] -= SP[s][u_high]
@@ -148,6 +163,8 @@ def algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level):
         Delta_d[v] = Delta[s][v]
         Q_lvl[level-1].append(v)
     Delta_d[v] += (SPd[v]/SPd[w]) * (1 + Delta_d[w])
+    if SP[s][w] == 0:
+        SP[s][w] = 1
     a = (SP[s][v]/SP[s][w]) * (1 + Delta[s][w])
     return flag, Delta_d, Q_lvl, a
 
@@ -272,8 +289,8 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
 
 
 def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
-    Q_bfs = deque(u_low)
-    Dd[u_low], SPd[u_low], Delta_d[u_low] = -1, 0, 0
+    Q_bfs = deque([u_low])
+    Dd[u_low], SPd[u_low], Delta_d[u_low] = float("inf"), 0, 0
 
     while Q_bfs:
         v = Q_bfs.popleft()
@@ -282,7 +299,7 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
                 if flag[w] == State.NP:
                     Q_bfs.append(w)
                     flag[w] = State.M
-                    Dd[w], SPd[w], Delta_d[w] = -1, 0, 0
+                    Dd[w], SPd[w], Delta_d[w] = float("inf"), 0, 0
                 bc[v] -= ((SP[s][v]/SP[s][w]) * (1 + Delta[s][w]))/2
 
     Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
@@ -303,30 +320,57 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
     return bc, Dd, SPd, Delta_d, flag
 
 
-def find_lowest_highest(G, s, u_1, u_2, D, SP, Delta):
-    if G.has_node(u_1) and G.has_node(u_2):
-        if D[s][u_1] < D[s][u_2]:
-            return u_1, u_2, D, SP, Delta
-        else:
-            return u_2, u_1, D, SP, Delta
+# will create an "island" of two nodes with a single edge
+# existing datastructures must be updated for the two nodes and the two nodes must get values for the rest
+def both_nodes_new(G, u1, u2, bc, D, SP, Delta):
+    D[u1], SP[u1], Delta[u1] = {}, {}, {}
+    D[u2], SP[u2], Delta[u2] = {}, {}, {}
 
-    else:
-        if G.has_node(u_1):
-            D[s][u_2] = D[s][u_1] + 1  # new node added, 1 distance further away than u_1
-            SP[s][u_2] = SP[s][u_1]  # new node added, inherits the shortest path from tail of endpoint
-            Delta[s][u_2] = 0  # new node is a leaf node and has a zero contribution to the source dependency
-            return u_1, u_2, D, SP, Delta
-        elif G.has_node(u_2):
-            D[s][u_1] = D[s][u_2] + 1  # new node added, 1 distance further away than u_2
-            SP[s][u_1] = SP[s][u_2]  # new node added, inherits the shortest path from tail of endpoint
-            Delta[s][u_1] = 0  # new node is a leaf node and has a zero contribution to the source dependency
-            return u_2, u_1, D, SP, Delta
+    for n in G:  # old graph
+        D[n][u1], D[n][u2] = float("inf"), float("inf")
+        D[u1][n], D[u2][n] = float("inf"), float("inf")
+
+        SP[n][u1], SP[n][u2] = 0, 0
+        SP[u1][n], SP[u2][n] = 0, 0
+
+        Delta[n][u1], Delta[n][u2] = 0, 0
+        Delta[u1][n], Delta[u2][n] = 0, 0
+
+    D, SP, Delta = intra_edge_dependencies(u1, u2, D, SP, Delta)
+
+    bc[u1], bc[u2] = 0, 0
+
+    return bc, D, SP, Delta
+
+
+def intra_edge_dependencies(u1, u2, D, SP, Delta):
+    D[u1][u1], D[u2][u2] = 0, 0
+    D[u1][u2], D[u2][u1] = 1, 1
+
+    SP[u1][u1], SP[u2][u2] = 1, 1
+    SP[u1][u2], SP[u2][u1] = 1, 1
+
+    Delta[u1][u1], Delta[u2][u2] = 1, 1
+    Delta[u1][u2], Delta[u2][u1] = 0, 0
+
+    return D, SP, Delta
+
+
+def find_lowest_highest(G, s, u1, u2, D):
+    if G.has_node(u1) and G.has_node(u2):
+
+        if D[s][u1] < D[s][u2]:
+            return u1, u2, False
         else:
-            # TODO: implement correct functionality when s is either of the endpoints
-            D[s][u_1], D[s][u_2] = -1, -1  # incoming edge has two new nodes
-            SP[s][u_1], SP[s][u_2] = 0, 0
-            Delta[s][u_1], Delta[s][u_2] = 0, 0
-            return u_2, u_1, D, SP, Delta
+            return u2, u1, False
+
+    # one of the nodes are new to the graph
+    else:
+        u_high = u1 if G.has_node(u1) else u2
+        u_low = u2 if not G.has_node(u2) else u1
+        if s == u_low:
+            return u2, u1, True
+        return u_high, u_low, True
 
 
 def has_predecessors(G, s, u_low, u_high, D):
@@ -336,23 +380,65 @@ def has_predecessors(G, s, u_low, u_high, D):
     return False
 
 
-def initialize_graph(G, edge):
-    G.add_edge(edge[0], edge[1])
+def init_missing_brandes(s, u1, u2, D, Delta):
+    if s not in D:
+        return D, Delta
+    if u1 not in D[s] and u2 not in D[s]:
+        D[s][u1], Delta[s][u1] = float("inf"), 0
+        D[s][u2], Delta[s][u2] = float("inf"), 0
+        return D, Delta
+    elif u1 not in D[s]:
+        D[s][u1], Delta[s][u1] = float("inf"), 0
+        return D, Delta
+    elif u2 not in D[s]:
+        D[s][u2], Delta[s][u2] = float("inf"), 0
+        return D, Delta
+    else:
+        return D, Delta
+
+
+def initialize_graph(G, u1, u2):
+    G.add_edge(u1, u2)
     bc = dict.fromkeys(G, 0.0)
     D = defaultdict(dict)
     SP = defaultdict(dict)
     Delta = defaultdict(dict)
 
-    D[edge[0]][edge[0]], D[edge[1]][edge[1]] = 0, 0
-    D[edge[0]][edge[1]], D[edge[1]][edge[0]] = 1, 1
-
-    SP[edge[0]][edge[0]], SP[edge[1]][edge[1]] = 1, 1
-    SP[edge[0]][edge[1]], SP[edge[1]][edge[0]] = 1, 1
-
-    Delta[edge[0]][edge[0]], Delta[edge[1]][edge[1]] = 1, 1
-    Delta[edge[0]][edge[1]], Delta[edge[1]][edge[0]] = 0, 0
+    D, SP, Delta = intra_edge_dependencies(u1, u2, D, SP, Delta)
 
     return G, bc, D, SP, Delta
+
+
+def update_datastructures(G, s, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d):
+    if s not in G:
+        bc, D, Dd, SP, SPd, Delta, Delta_d = \
+            update_all_data_source_s(G, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d)
+
+    else:
+        Dd[u_low], D[s][u_low] = D[s][u_high] + 1, D[s][u_high] + 1
+        SPd[u_low], SP[s][u_low] = SP[s][u_high], SP[s][u_high]
+        Delta_d[u_low], Delta[s][u_low] = 0, 0
+        bc[u_low] = 0
+
+    return bc, D, Dd, SP, SPd, Delta, Delta_d
+
+
+# we know u_low is equal to the source
+def update_all_data_source_s(G, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d):
+    D[u_high], SP[u_high], Delta[u_high] = {}, {}, {}  # initialize new row in matrices
+
+    for n in G:  # old graph
+        Dd[n], D[u_high][n] = D[u_low][n] + 1, D[u_low][n] + 1
+        SPd[n], SP[u_high][n] = SP[u_low][n], SP[u_low][n]
+        Delta_d[n], Delta[u_high][n] = Delta[u_low][n] + 1, 0
+
+    Dd[u_high], D[u_high][u_high] = 0, 0
+    SPd[u_high], SP[u_high][u_high] = 1, 1
+    Delta_d[u_high], Delta[u_high][u_high] = 0, 0
+
+    bc[u_high] = 0
+
+    return bc, D, Dd, SP, SPd, Delta, Delta_d
 
 
 def print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
@@ -376,7 +462,7 @@ def pretty_print_datastructures(s, bc=None, D=None, SP=None, Delta=None):
 
     if D:
         print("s  = {}, D[s]:".format(s))
-        pprint.pprint([s])
+        pprint.pprint(D[s])
 
     if SP:
         print("s  = {}, SP[s]:".format(s))
