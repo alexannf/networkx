@@ -3,28 +3,12 @@ import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
 
 
-class TestKourtellisBetweenness:
-
-    def test_add_single_edge_graph(self):
-        G = nx.Graph()
-        G.add_edge('1', '2')
-        G_dyn = nx.Graph()
-
-        bc, D, SP, Delta = nx.betweenness_centrality(G, weight=None, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('1', '2'), "add")
-
-        for s in sorted(G):
-            assert bc[s] == pytest.approx(bc_new[s], abs=1e-7)
-
-            for t in sorted(G):
-                assert D[s][t] == pytest.approx(D_new[s][t], abs=1e-7)
-                assert SP[s][t] == pytest.approx(SP_new[s][t], abs=1e-7)
-                assert Delta[s][t] == pytest.approx(Delta_new[s][t], abs=1e-7)
+class TestThesisGroupBetweenness:
 
     def test_add_edge_single_endpoint_new_node(self):
-        G = g.single_edge_graph()
-        G.add_edge('2', '3')
-        G_dyn = g.single_edge_graph()
+        G = g.line_length_5()
+        G.add_edge('6', '7')
+        G_dyn = g.line_length_5()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, weight=None, normalized=False, xtra_data=True)
         G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('2', '3'), "add")
@@ -322,3 +306,4 @@ class TestKourtellisBetweenness:
 
                 for t in sorted(G):
                     assert SP1[s][t] == pytest.approx(SP2[s][t], abs=1e-7)
+
