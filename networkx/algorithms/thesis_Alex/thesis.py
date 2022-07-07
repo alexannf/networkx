@@ -23,7 +23,7 @@ def get_groups(G, group_size, num_groups):
 
 
 def setup(edge_stream_size, group_size, num_groups, category, dataset):
-    filename = join(dirname, 'thesis_Alex\\datasets\\' + category + '\\' + dataset + '.edges')
+    filename = join(dirname, 'thesis_Alex/datasets/' + category + '/' + dataset + '.edges')
     G = nx.read_edgelist(filename)
     edge_stream = rd.sample(G.edges, edge_stream_size)
     G.remove_edges_from(edge_stream)
@@ -34,7 +34,7 @@ def setup(edge_stream_size, group_size, num_groups, category, dataset):
 def puzis_state_of_the_art_add(G, edge_stream, groups, edge_stream_size, group_size, num_groups, category, dataset):
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
-    filename = join(dirname, 'thesis_Alex\\results\\' + category + '\\' + dataset + '\\' + dt + '.csv')
+    filename = join(dirname, 'thesis_Alex/results/' + category + '/' + dataset + '/' + dt + '.csv')
     file = open(filename, "w")
     file.write("operation = add, graph nodes = {}, graph edges {}, edge stream size = {}, "
                "groups size = {}, number of groups = {}\n".format(G.number_of_nodes(), G.number_of_edges(),
