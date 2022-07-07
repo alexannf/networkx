@@ -44,11 +44,10 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, edge_stream_size, group_s
     for edge in edge_stream:
         G.add_edge(edge[0], edge[1])
         clk_start = time()
-        gbc = nx.group_betweenness_centrality(G, groups)
+        nx.group_betweenness_centrality(G, groups)
         clk_end = time()
         total_time += clk_end - clk_start
-        print(gbc)
-        print("total run time {}. iteration: {} \n".format(cnt, total_time))
+        print("total run time after {}. iteration: {}".format(cnt, total_time))
         file.write("{}, {}\n".format(cnt, total_time))
         cnt += 1
     file.close()
