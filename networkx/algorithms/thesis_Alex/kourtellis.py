@@ -32,26 +32,15 @@ def kourtellis_dynamic_bc(G, new_edge, operation, endpoints=False):
     else:
         bc, D, SP, Delta = nx.betweenness_centrality(G, xtra_data=True, normalized=False)
 
-    G_new, bc, D, SP, Delta = algorithm_1(G, bc, D, SP, Delta, new_edge, operation, endpoints)
+    G_new, bc, D, SP, Delta = algorithm_1(G, bc, D, SP, Delta, new_edge, operation)
     return G_new, bc, D, SP, Delta
 
 
-def algorithm_1(G, bc, D, SP, Delta, edge, operation, endpoints=False):
+def algorithm_1(G, bc, D, SP, Delta, edge, operation):
     if not (operation == "add" or operation == "remove"):
         raise TypeError("edge operation must be add or remove")
 
-    if nx.is_empty(G):
-        if operation == "remove":
-            raise TypeError("cannot remove an edge from an empty graph")
-        G_new, bc, D, SP, Delta = initialize_graph(G, edge[0], edge[1])
-        return G_new, bc, D, SP, Delta
-
     u1, u2 = edge[0], edge[1]
-
-    if not (G.has_node(u1) or G.has_node(u2)):
-        bc, D, SP, Delta = both_nodes_new(G, u1, u2, bc, D, SP, Delta)
-        G.add_edge(u1, u2)
-        return G, bc, D, SP, Delta
 
     Dd, SPd, Delta_d, flag = {}, {}, {}, {}  # data structures to store updates from dynamic addition/deletion
     G_new = copy.deepcopy(G)
@@ -67,10 +56,6 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation, endpoints=False):
 
         D, Delta = init_missing_brandes(s, u1, u2, D, Delta)
         u_high, u_low, new_node = find_lowest_highest(G, s, u1, u2, D)
-
-        if new_node:
-            bc, D, Dd, SP, SPd, Delta, Delta_d = \
-                update_datastructures(G, s, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d)
 
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
 
@@ -323,57 +308,11 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
     return bc, Dd, SPd, Delta_d, flag
 
 
-# will create an "island" of two nodes with a single edge
-# existing datastructures must be updated for the two nodes and the two nodes must get values for the rest
-def both_nodes_new(G, u1, u2, bc, D, SP, Delta):
-    D[u1], SP[u1], Delta[u1] = {}, {}, {}
-    D[u2], SP[u2], Delta[u2] = {}, {}, {}
-
-    for n in G:  # old graph
-        D[n][u1], D[n][u2] = float("inf"), float("inf")
-        D[u1][n], D[u2][n] = float("inf"), float("inf")
-
-        SP[n][u1], SP[n][u2] = 0, 0
-        SP[u1][n], SP[u2][n] = 0, 0
-
-        Delta[n][u1], Delta[n][u2] = 0, 0
-        Delta[u1][n], Delta[u2][n] = 0, 0
-
-    D, SP, Delta = intra_edge_dependencies(u1, u2, D, SP, Delta)
-
-    bc[u1], bc[u2] = 0, 0
-
-    return bc, D, SP, Delta
-
-
-def intra_edge_dependencies(u1, u2, D, SP, Delta):
-    D[u1][u1], D[u2][u2] = 0, 0
-    D[u1][u2], D[u2][u1] = 1, 1
-
-    SP[u1][u1], SP[u2][u2] = 1, 1
-    SP[u1][u2], SP[u2][u1] = 1, 1
-
-    Delta[u1][u1], Delta[u2][u2] = 1, 1
-    Delta[u1][u2], Delta[u2][u1] = 0, 0
-
-    return D, SP, Delta
-
-
 def find_lowest_highest(G, s, u1, u2, D):
-    if G.has_node(u1) and G.has_node(u2):
-
-        if D[s][u1] < D[s][u2]:
-            return u1, u2, False
-        else:
-            return u2, u1, False
-
-    # one of the nodes are new to the graph
+    if D[s][u1] < D[s][u2]:
+        return u1, u2, False
     else:
-        u_high = u1 if G.has_node(u1) else u2
-        u_low = u2 if not G.has_node(u2) else u1
-        if s == u_low:
-            return u2, u1, True
-        return u_high, u_low, True
+        return u2, u1, False
 
 
 def has_predecessors(G, s, u_low, u_high, D):
@@ -398,50 +337,6 @@ def init_missing_brandes(s, u1, u2, D, Delta):
         return D, Delta
     else:
         return D, Delta
-
-
-def initialize_graph(G, u1, u2):
-    G.add_edge(u1, u2)
-    bc = dict.fromkeys(G, 0.0)
-    D = defaultdict(dict)
-    SP = defaultdict(dict)
-    Delta = defaultdict(dict)
-
-    D, SP, Delta = intra_edge_dependencies(u1, u2, D, SP, Delta)
-
-    return G, bc, D, SP, Delta
-
-
-def update_datastructures(G, s, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d):
-    if s not in G:
-        bc, D, Dd, SP, SPd, Delta, Delta_d = \
-            update_all_data_source_s(G, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d)
-
-    else:
-        Dd[u_low], D[s][u_low] = D[s][u_high] + 1, D[s][u_high] + 1
-        SPd[u_low], SP[s][u_low] = SP[s][u_high], SP[s][u_high]
-        Delta_d[u_low], Delta[s][u_low] = 0, 0
-        bc[u_low] = 0
-
-    return bc, D, Dd, SP, SPd, Delta, Delta_d
-
-
-# we know u_low is equal to the source
-def update_all_data_source_s(G, u_high, u_low, bc, D, Dd, SP, SPd, Delta, Delta_d):
-    D[u_high], SP[u_high], Delta[u_high] = {}, {}, {}  # initialize new row in matrices
-
-    for n in G:  # old graph
-        Dd[n], D[u_high][n] = D[u_low][n] + 1, D[u_low][n] + 1
-        SPd[n], SP[u_high][n] = SP[u_low][n], SP[u_low][n]
-        Delta_d[n], Delta[u_high][n] = Delta[u_low][n] + 1, 0
-
-    Dd[u_high], D[u_high][u_high] = 0, 0
-    SPd[u_high], SP[u_high][u_high] = 1, 1
-    Delta_d[u_high], Delta[u_high][u_high] = 0, 0
-
-    bc[u_high] = 0
-
-    return bc, D, Dd, SP, SPd, Delta, Delta_d
 
 
 def print_datastructures(s, bc=None, D=None, SP=None, Delta=None):

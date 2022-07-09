@@ -22,10 +22,14 @@ def thesis_add(G, edge_stream, groups, edge_stream_size, group_size, num_groups,
                                                                   edge_stream_size, group_size, num_groups))
     cnt = 1
     total_time = 0.0
+
+    GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G, groups, endpoints=True, xtra_data=True)
+
     for edge in edge_stream:
-        G.add_edge(edge[0], edge[1])
         clk_start = time()
-        dynamic_group_betweenness()
+        #  returns new graph G with new edge added
+        GBC, G, bc, D, sigma, Delta = \
+            dynamic_group_betweenness(G, groups, bc, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
         clk_end = time()
         total_time += clk_end - clk_start
         print("total run time after {}. iteration: {}".format(cnt, total_time))

@@ -127,7 +127,7 @@ def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=F
 
     # pre-processing
     if xtra_data:
-        PB, sigma, D, delta = _group_preprocessing(G, set_v, weight, True)
+        bc, PB, sigma, D, delta = _group_preprocessing(G, set_v, weight, True)
     else:
         PB, sigma, D = _group_preprocessing(G, set_v, weight)
 
@@ -199,17 +199,19 @@ def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=F
         GBC.append(GBC_group)
     if list_of_groups:
         if xtra_data:
-            return GBC, D, sigma, delta
+            return GBC, bc, PB, D, sigma, delta
         return GBC,
     else:
         if xtra_data:
-            return GBC[0], D, sigma, delta
+            return GBC[0], bc, PB, D, sigma, delta
         return GBC[0]
 
 
 def _group_preprocessing(G, set_v, weight, xtra_data=False):
     sigma = {}
     delta = {}
+    if xtra_data:
+        delta_dyn = {}
     D = {}
     betweenness = dict.fromkeys(G, 0)
     for s in G:
@@ -218,8 +220,10 @@ def _group_preprocessing(G, set_v, weight, xtra_data=False):
         else:  # use Dijkstra's algorithm
             S, P, sigma[s], D[s] = _single_source_dijkstra_path_basic(G, s, weight)
         betweenness, delta[s] = _accumulate_endpoints(betweenness, S, P, sigma[s], s)
+        if xtra_data:
+            delta_dyn[s] = delta[s]
         for i in delta[s].keys():  # add the paths from s to i and rescale sigma
-            if s != i and not xtra_data:
+            if s != i:
                 delta[s][i] += 1
             if weight is not None:
                 sigma[s][i] = sigma[s][i] / 2
@@ -244,7 +248,7 @@ def _group_preprocessing(G, set_v, weight, xtra_data=False):
                             / sigma[node][group_node2]
                         )
     if xtra_data:
-        return PB, sigma, D, delta
+        return betweenness, PB, sigma, D, delta_dyn
     return PB, sigma, D
 
 
