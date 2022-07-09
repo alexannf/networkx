@@ -2,6 +2,7 @@ import pytest
 import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
 from networkx.algorithms.thesis_Alex.thesis_algo import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.setup import get_groups
 
 
 class TestThesisGroupBetweenness:
@@ -11,9 +12,6 @@ class TestThesisGroupBetweenness:
         G_dyn = g.incomplete_square()
         groups = ['1', '2']
 
-        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
-            G, groups, normalized=False, endpoints=True, xtra_data=True)
-
         GBC_in, bc_in, PB_in, D_in, sigma_in, Delta_in = nx.group_betweenness_centrality(
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
@@ -21,31 +19,39 @@ class TestThesisGroupBetweenness:
             dynamic_group_betweenness(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('3', '4'), "add", normalized=False, endpoints=True)
 
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
+            G, groups, normalized=False, endpoints=True, xtra_data=True)
 
-
-        # assert pytest.approx(GBC_new, abs=1e-7) == GBC
+        assert pytest.approx(GBC_new, abs=1e-7) == GBC
 
         for s in sorted(G_new):
-            assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
 
             for t in sorted(G):
                 assert pytest.approx(D_new[s][t], abs=1e-7) == D[s][t]
-                assert pytest.approx(sigma_new[s][t], abs=1e-7) ==sigma[s][t]
+                assert pytest.approx(sigma_new[s][t], abs=1e-7) == sigma[s][t]
                 assert pytest.approx(Delta_new[s][t], abs=1e-7) == Delta[s][t]
 
     def test_edge_removal_existing_nodes(self):
         G = g.incomplete_square()
         G_dyn = g.complete_square()
+        groups = ['1', '2']
 
-        bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('3', '4'), "remove", endpoints=True)
+        GBC_in, bc_in, PB_in, D_in, sigma_in, Delta_in = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for s in sorted(G):
-            assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
+        GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
+            dynamic_group_betweenness(
+                G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('3', '4'), "remove", normalized=False, endpoints=True)
 
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
+            G, groups, normalized=False, endpoints=True, xtra_data=True)
+
+        assert pytest.approx(GBC_new, abs=1e-7) == GBC
+
+        for s in sorted(G_new):
             for t in sorted(G):
                 assert pytest.approx(D_new[s][t], abs=1e-7) == D[s][t]
-                assert pytest.approx(SP_new[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(sigma_new[s][t], abs=1e-7) == sigma[s][t]
                 assert pytest.approx(Delta_new[s][t], abs=1e-7) == Delta[s][t]
 
     def test_edge_addition_trondheim_graph(self):
@@ -54,61 +60,80 @@ class TestThesisGroupBetweenness:
         G_dyn = g.trondheim_graph()
         G_dyn.add_edge('5', 'F')
         G_dyn.remove_edge('5', 'F')
+        groups = [['D', '12'], ['D', 'L'], ['L', '2']]
 
-        bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('5', 'F'), "add", endpoints=True)
+        GBC_in, bc_in, PB_in, D_in, sigma_in, Delta_in = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for s in sorted(G):
-            assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
+        GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
+            dynamic_group_betweenness(
+                G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('5', 'F'), "add", normalized=False, endpoints=True)
 
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
+            G, groups, normalized=False, endpoints=True, xtra_data=True)
+
+        for group_dyn, group in zip(GBC_new, GBC):
+            assert pytest.approx(group_dyn, abs=1e-7) == group
+
+        for s in sorted(G_new):
             for t in sorted(G):
                 assert pytest.approx(D_new[s][t], abs=1e-7) == D[s][t]
-                assert pytest.approx(SP_new[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(sigma_new[s][t], abs=1e-7) == sigma[s][t]
                 assert pytest.approx(Delta_new[s][t], abs=1e-7) == Delta[s][t]
 
     def test_edge_deletion_trondheim_graph(self):
         G = g.trondheim_graph()
         G.remove_edge('1', '2')
         G_dyn = g.trondheim_graph()
+        groups = [['D', '12'], ['D', 'L'], ['L', '2']]
 
-        bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('1', '2'), "remove", endpoints=True)
+        GBC_in, bc_in, PB_in, D_in, sigma_in, Delta_in = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for s in sorted(G):
-            assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
+        GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
+            dynamic_group_betweenness(
+                G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('1', '2'), "remove", normalized=False, endpoints=True)
 
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
+            G, groups, normalized=False, endpoints=True, xtra_data=True)
+
+        for group_dyn, group in zip(GBC_new, GBC):
+            assert pytest.approx(group_dyn, abs=1e-7) == group
+
+        for s in sorted(G_new):
             for t in sorted(G):
                 assert pytest.approx(D_new[s][t], abs=1e-7) == D[s][t]
-                assert pytest.approx(SP_new[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(sigma_new[s][t], abs=1e-7) == sigma[s][t]
                 assert pytest.approx(Delta_new[s][t], abs=1e-7) == Delta[s][t]
-
-    def test_edge_reconnection_disconnected_graph_line(self):
-        G = g.line_length_5()
-        G_dyn = g.line_length_5()
-
-        bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc, D, SP, Delta, ('3', '4'), "remove")
-        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1(G_rem, bc2, D2, SP2, Delta2, ('3', '4'), "add")
-
-        for s in sorted(G):
-            assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
-
-            for t in sorted(G):
-                assert pytest.approx(SP3[s][t], abs=1e-7) == SP[s][t]
 
     def test_edge_reconnection_disconnected_graph_trondheim(self):
         G = g.trondheim_graph()
         G_dyn = g.trondheim_graph()
+        groups = [['D', '12'], ['D', 'L'], ['L', '2']]
 
-        bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc, D, SP, Delta, ('B', 'D'), "remove")
-        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1(G_rem, bc2, D2, SP2, Delta2, ('B', 'D'), "add")
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
+            G, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for s in sorted(G):
-            assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
+        GBC_in, bc_in, PB_in, D_in, sigma_in, Delta_in = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
+
+        GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
+            dynamic_group_betweenness(
+                G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('B', 'D'), "remove", normalized=False, endpoints=True)
+
+        GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
+            dynamic_group_betweenness(
+                G_new, groups, bc_new, D_new, sigma_new, Delta_new, ('B', 'D'), "add", normalized=False, endpoints=True)
+
+        for group_dyn, group in zip(GBC_new, GBC):
+            assert pytest.approx(group_dyn, abs=1e-7) == group
+
+        for s in sorted(G_new):
 
             for t in sorted(G):
-                assert pytest.approx(SP3[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(D_new[s][t], abs=1e-7) == D[s][t]
+                assert pytest.approx(sigma_new[s][t], abs=1e-7) == sigma[s][t]
+                assert pytest.approx(Delta_new[s][t], abs=1e-7) == Delta[s][t]
 
     def test_construct_facebook_0(self):
         G = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
@@ -116,38 +141,51 @@ class TestThesisGroupBetweenness:
         edge_stream = list(map(lambda x: "{} {}".format(x[0], x[1]), edges))
         G_dyn = nx.parse_edgelist(edge_stream)
         G_bc = nx.parse_edgelist(edge_stream)
+        groups = get_groups(G_bc, 5, 5)
 
-        bc2, D2, SP2, Delta2 = \
-            nx.betweenness_centrality(G_dyn, endpoints=True, normalized=False, xtra_data=True)
+        GBC2, bc2, PB2, D2, sigma2, Delta2 = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for edge in list(G.edges)[1500:1530:None]:
+        for edge in list(G.edges)[1500:1515:None]:
             G_bc.add_edge(edge[0], edge[1])
 
-            bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G_bc, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "add")
+            GBC1, bc1, PB1, D1, sigma1, Delta1 = nx.group_betweenness_centrality(
+                G_bc, groups, normalized=False, endpoints=True, xtra_data=True)
+
+            GBC2, G_dyn, bc2, PB2, D2, sigma2, Delta2 = \
+                dynamic_group_betweenness(
+                    G_dyn, groups, bc2, D2, sigma2, Delta2, edge, "add", normalized=False,
+                    endpoints=True)
+
+            for group_dyn, group in zip(GBC2, GBC1):
+                assert pytest.approx(group_dyn, abs=1e-7) == group
 
             for s in sorted(G_bc):
-                assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
-
                 for t in sorted(G_bc):
-                    assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
+                    assert pytest.approx(sigma2[s][t], abs=1e-7) == sigma1[s][t]
 
     def test_deconstruct_facebook(self):
         G = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
         G_dyn = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
+        groups = get_groups(G, 3, 3)
 
-        bc2, D2, SP2, Delta2 = \
-            nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
+        GBC2, bc2, PB2, D2, sigma2, Delta2 = nx.group_betweenness_centrality(
+            G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
-        for edge in list(G.edges)[None:10:None]:
+        for edge in list(G.edges)[None:5:None]:
             G.remove_edge(edge[0], edge[1])
 
-            bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
+            GBC1, bc1, PB1, D1, sigma1, Delta1 = nx.group_betweenness_centrality(
+                G, groups, normalized=False, endpoints=True, xtra_data=True)
+
+            GBC2, G_dyn, bc2, PB2, D2, sigma2, Delta2 = \
+                dynamic_group_betweenness(
+                    G_dyn, groups, bc2, D2, sigma2, Delta2, edge, "remove", normalized=False,
+                    endpoints=True)
+
+            for group_dyn, group in zip(GBC2, GBC1):
+                assert pytest.approx(group_dyn, abs=1e-7) == group
 
             for s in sorted(G):
-                assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
-
                 for t in sorted(G):
-                    assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
-
+                    assert pytest.approx(sigma2[s][t], abs=1e-7) == sigma1[s][t]

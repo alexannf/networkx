@@ -5,6 +5,6 @@ from networkx.algorithms.thesis_Alex.setup import setup
 if __name__ == '__main__':
     G, edge_stream, groups = setup("add", 10, 10, 10, "facebook", "0")
 
-    # puzis_state_of_the_art_add(G, edge_stream, groups, 10, 10, 10, "facebook", "0")
+    puzis_state_of_the_art_add(G, edge_stream, groups, 10, 10, 10, "facebook", "0")
     thesis_add(G, edge_stream, groups, 10, 10, 10, "facebook", "0")
 

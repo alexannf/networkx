@@ -4,12 +4,18 @@ from os.path import dirname, abspath, join
 
 dirname = dirname(dirname(dirname(dirname(abspath(__file__)))))
 
+__all__ = [
+    "setup",
+    "get_groups",
+]
 
 def get_groups(G, group_size, num_groups):
     groups = []
     for i in range(num_groups):
         groups.append(rd.sample(G.nodes, group_size))
-    print(groups)
+    print("groups:")
+    for group in groups:
+        print(group)
     if num_groups == 1:
         return groups[0]
     return groups

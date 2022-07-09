@@ -28,7 +28,7 @@ def thesis_add(G, edge_stream, groups, edge_stream_size, group_size, num_groups,
     for edge in edge_stream:
         clk_start = time()
         #  returns new graph G with new edge added
-        GBC, G, bc, D, sigma, Delta = \
+        GBC, G, bc, PB, D, sigma, Delta = \
             dynamic_group_betweenness(G, groups, bc, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
         clk_end = time()
         total_time += clk_end - clk_start

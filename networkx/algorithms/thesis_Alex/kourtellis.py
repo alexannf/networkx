@@ -55,7 +55,7 @@ def algorithm_1(G, bc, D, SP, Delta, edge, operation):
     for s in G_new:
 
         D, Delta = init_missing_brandes(s, u1, u2, D, Delta)
-        u_high, u_low, new_node = find_lowest_highest(G, s, u1, u2, D)
+        u_high, u_low, new_node = find_lowest_highest(s, u1, u2, D)
 
         dd = D[s][u_low] - D[s][u_high]  # distance difference between endpoints of newly added edge relative to s
 
@@ -308,7 +308,7 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
     return bc, Dd, SPd, Delta_d, flag
 
 
-def find_lowest_highest(G, s, u1, u2, D):
+def find_lowest_highest(s, u1, u2, D):
     if D[s][u1] < D[s][u2]:
         return u1, u2, False
     else:

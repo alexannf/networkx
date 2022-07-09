@@ -19,7 +19,8 @@ def dynamic_group_betweenness(G, C, bc, D, sigma, Delta, edge, operation, normal
     if set_v - G.nodes:  # element(s) of C not in G
         raise nx.NodeNotFound(f"The node(s) {set_v - G.nodes} are in C but not in G.")
 
-    G_new, bc, PB, D, sigma, Delta = _dynamic_preprocessing(G, set_v, bc, D, sigma, Delta, edge, operation)
+    G_new, bc_new, PB, D_new, sigma_new, Delta_new = \
+        _dynamic_preprocessing(G, set_v, bc, D, sigma, Delta, edge, operation)
 
     # the algorithm for each group
     for group in C:
@@ -86,17 +87,19 @@ def dynamic_group_betweenness(G, C, bc, D, sigma, Delta, edge, operation, normal
         GBC.append(GBC_group)
 
     if list_of_groups:
-        return GBC, G_new, bc, PB, D, sigma, Delta
+        return GBC, G_new, bc_new, PB, D_new, sigma_new, Delta_new
     else:
-        return GBC[0], G_new, bc, PB, D, sigma, Delta
+        return GBC[0], G_new, bc_new, PB, D_new, sigma_new, Delta_new
 
 
 def _dynamic_preprocessing(G, set_v, bc, D, sigma, Delta, edge, operation):
-    G_new, bc, D, sigma, Delta = algorithm_1(G, bc, D, sigma, Delta, edge, operation)
-    Delta_pre = deepcopy(Delta)
+    G_new, bc_new, D_new, sigma_new, Delta_new = algorithm_1(G, bc, D, sigma, Delta, edge, operation)
+    Delta_pre = deepcopy(Delta_new)
     for s in G_new:
         for i in G_new:
-            if s != i and D[s][i] != float("inf"):
+            if i not in D_new[s]:
+                D_new[s][i], Delta_pre[s][i] = float("inf"), 0
+            if s != i and D_new[s][i] != float("inf"):
                 Delta_pre[s][i] += 1
 
     PB = dict.fromkeys(G_new)
@@ -107,17 +110,19 @@ def _dynamic_preprocessing(G, set_v, bc, D, sigma, Delta, edge, operation):
                 continue
             for node in G:
                 # if node is connected to the two group nodes than continue
-                if group_node2 in D[node] and group_node1 in D[node]:
+                if D_new[node][group_node2] != float("inf") and D_new[node][group_node1] != float("inf"):
                     if (
-                            D[node][group_node2]
-                            == D[node][group_node1] + D[group_node1][group_node2]
+                            D_new[node][group_node2]
+                            == D_new[node][group_node1] + D_new[group_node1][group_node2]
                     ):
+                        if sigma_new[node][group_node2] == 0:
+                            sigma_new[node][group_node2] = 1
                         PB[group_node1][group_node2] += (
                                 Delta_pre[node][group_node2]
-                                * sigma[node][group_node1]
-                                * sigma[group_node1][group_node2]
-                                / sigma[node][group_node2]
+                                * sigma_new[node][group_node1]
+                                * sigma_new[group_node1][group_node2]
+                                / sigma_new[node][group_node2]
                         )
-    return G_new, bc, PB, D, sigma, Delta
+    return G_new, bc_new, PB, D_new, sigma_new, Delta_new
 
 
