@@ -57,7 +57,7 @@ def thesis_remove_gbc(G, edge_stream, groups, edge_stream_size, group_size, num_
     for edge in edge_stream:
         clk_start = time()
         #  returns new graph G_dyn with new edge added
-        GBC, G_dyn, PB, D, sigma, Delta = \
+        GBC, G_dyn, D, sigma, Delta = \
             dynamic_group_betweenness_gbc(
                 G_dyn, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True)
         clk_end = time()

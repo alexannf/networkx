@@ -13,7 +13,7 @@ def get_groups(G, group_size, num_groups):
     groups = []
     for i in range(num_groups):
         groups.append(rd.sample(G.nodes, group_size))
-    print("groups:")
+    print("\ngroups:")
     for group in groups:
         print(group)
     if num_groups == 1:
