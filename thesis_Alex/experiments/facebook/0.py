@@ -1,5 +1,5 @@
 from networkx.algorithms.thesis_Alex.puzis_sota_experiments import puzis_state_of_the_art_add
-from networkx.algorithms.thesis_Alex.thesis_experiments import thesis_add
+from networkx.algorithms.thesis_Alex.thesis_experiments_old import thesis_add
 from networkx.algorithms.thesis_Alex.setup import setup
 
 if __name__ == '__main__':

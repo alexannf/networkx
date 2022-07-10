@@ -1,7 +1,7 @@
 import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
 import networkx.algorithms.thesis_Alex.utils.utils as u
-from networkx.algorithms.thesis_Alex.thesis_algo import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness
 from copy import deepcopy
 
 if __name__ == '__main__':

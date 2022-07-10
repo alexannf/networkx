@@ -2,7 +2,7 @@ import networkx as nx
 from time import time
 from datetime import datetime
 from os.path import dirname, abspath, join
-from networkx.algorithms.thesis_Alex.thesis_algo import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness
 
 __all__ = [
     "thesis_add",

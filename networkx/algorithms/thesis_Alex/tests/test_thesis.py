@@ -1,7 +1,7 @@
 import pytest
 import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
-from networkx.algorithms.thesis_Alex.thesis_algo import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness
 from networkx.algorithms.thesis_Alex.setup import get_groups
 
 
