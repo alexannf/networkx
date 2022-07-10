@@ -18,7 +18,8 @@ class State(Enum):
     M = "disconnected"
 
 
-def algorithm_1_gbc(G, bc, D, SP, Delta, edge, operation):
+# this version of algorithm 1 only concerns updating D, SP and Delta correctly
+def algorithm_1_gbc(G, D, SP, Delta, edge, operation):
     if not (operation == "add" or operation == "remove"):
         raise TypeError("edge operation must be add or remove")
 
@@ -55,39 +56,38 @@ def algorithm_1_gbc(G, bc, D, SP, Delta, edge, operation):
 
             if operation == "add":
                 if dd == 1:  # 0 level rise
-                    bc, Dd, SPd, Delta_d, flag = \
+                    Dd, SPd, Delta_d, flag = \
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
-                                    flag, bc, SP, SPd, Dd, Delta, Delta_d, operation, new_node)
+                                    flag, SP, SPd, Dd, Delta, Delta_d, operation)
 
                 if dd > 1:  # 1 or more level rise
-                    bc, Dd, SPd, Delta_d, flag = \
+                    Dd, SPd, Delta_d, flag = \
                         algorithm_4(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
-                                    flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
+                                    flag, SP, SPd, D, Dd, Delta, Delta_d)
 
             else:
                 if has_predecessors(G, s, u_low, u_high, D):  # 0 level drop
-                    bc, Dd, SPd, Delta_d, flag = \
+                    Dd, SPd, Delta_d, flag = \
                         algorithm_2(G_new, s, u_low, u_high, Q_lvl, Q_bfs,
-                                    flag, bc, SP, SPd, Dd, Delta, Delta_d, operation)
+                                    flag, SP, SPd, Dd, Delta, Delta_d, operation)
                 else:  # 1 or more level drop
-                    bc, Dd, SPd, Delta_d, flag = \
-                        algorithm_6(G_new, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
+                    Dd, SPd, Delta_d, flag = \
+                        algorithm_6(G_new, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d)
 
         for r in G_new:
             SP[s][r], D[s][r] = SPd[r], Dd[r]
             if flag[r] != State.N:
                 Delta[s][r] = Delta_d[r]
 
-        # pretty_print_datastructures(s, bc, D, SP, Delta)
-
-    return G_new, bc, D, SP, Delta
+    return G_new, D, SP, Delta
 
 
 # is run when the distances of the endpoints of an added/deleted edge differ with exactly one (with respect to s)
-def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta, Delta_d, operation, new_node=False):
+def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, SP, SPd, Dd, Delta, Delta_d, operation):
+    top_lvl = Dd[u_low]
     Q_lvl[Dd[u_low]].append(u_low)
     flag[u_low] = State.D
-    if operation == "add" and not new_node:
+    if operation == "add":
         SPd[u_low] += SP[s][u_high]
     if operation == "remove":
         SPd[u_low] -= SP[s][u_high]
@@ -98,6 +98,8 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
             if Dd[w] == Dd[v] + 1:  # is discovered node 1 step further from the source?
                 if flag[w] == State.N:  # if not discovered yet
                     Q_lvl[Dd[w]].append(w)  #
+                    if Dd[w] > top_lvl:
+                        top_lvl = Dd[w]
                     flag[w] = State.D
                     Q_bfs.append(w)
                 SPd[w] += (SPd[v] - SP[s][v])
@@ -106,7 +108,7 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
         Q_lvl[Dd[u_high]].append(u_high)
         flag[u_high] = State.U
 
-    level = G.number_of_nodes()
+    level = top_lvl
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].popleft()
@@ -119,11 +121,9 @@ def algorithm_2(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, Dd, Delta,
                     if operation == "remove":
                         if flag[v] == State.U:
                             Delta_d[v] -= a
-            if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])/2
         level -= 1
 
-    return bc, Dd, SPd, Delta_d, flag
+    return Dd, SPd, Delta_d, flag
 
 
 # dependency accumulation phase
@@ -140,9 +140,10 @@ def algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level):
 
 
 # is run when the distances of the endpoints of an added edge differ with more than one (with respect to s)
-def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
+def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, SP, SPd, D, Dd, Delta, Delta_d):
     Dd[u_low] = D[s][u_high] + 1
     Q_lvl[Dd[u_low]].append(u_low)
+    top_lvl = Dd[u_low]
     while Q_bfs:
         v = Q_bfs.popleft()
         flag[v], SPd[v] = State.D, 0
@@ -154,6 +155,8 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
             if Dd[w] > Dd[v] and flag[w] == State.N:
                 flag[w], Dd[w] = State.D, Dd[v] + 1
                 Q_lvl[Dd[w]].append(w)
+                if Dd[w] > top_lvl:
+                    top_lvl = Dd[w]
                 Q_bfs.append(w)
 
             # is discovered node equally far away from the source as parent for both the old and new graph?
@@ -161,8 +164,10 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
                 if flag[w] == State.N:
                     flag[w] = State.D
                     Q_lvl[Dd[w]].append(w)
+                    if Dd[w] > top_lvl:
+                        top_lvl = Dd[w]
                     Q_bfs.append(w)
-    level = G.number_of_nodes()
+    level = top_lvl
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].popleft()
@@ -172,15 +177,12 @@ def algorithm_4(G, s, u_low, u_high, Q_lvl, Q_bfs, flag, bc, SP, SPd, D, Dd, Del
                     if flag[v] == State.U and (v != u_high or w != u_low):
                         Delta_d[v] -= a
 
-            if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])/2
-
         level -= 1
 
-    return bc, Dd, SPd, Delta_d, flag
+    return Dd, SPd, Delta_d, flag
 
 
-def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
+def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d):
     PQ, Q_bfs = defaultdict(deque), deque([])
     first = G.number_of_nodes()
     Q_bfs.append(u_low)
@@ -198,16 +200,17 @@ def algorithm_6(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     Q_bfs.append(w)
                     flag[w] = State.NP
     if PQ:
-        bc, Dd, SPd, Delta_d, flag = \
-            algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
-        return bc, Dd, SPd, Delta_d, flag
+        Dd, SPd, Delta_d, flag = \
+            algorithm_7(G, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d, PQ, first)
+        return Dd, SPd, Delta_d, flag
     else:
-        bc, Dd, SPd, Delta_d, flag = \
-            algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d)
-        return bc, Dd, SPd, Delta_d, flag
+        Dd, SPd, Delta_d, flag = \
+            algorithm_10(G, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d)
+        return Dd, SPd, Delta_d, flag
 
 
-def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d, PQ, first):
+def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d, PQ, first):
+    top_lvl = 0
     Q_bfs = deque([])
     Q_bfs.extend(PQ[first])
     nxt = first + 1
@@ -215,6 +218,8 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
         v = Q_bfs.popleft()
         flag[v], SPd[v] = State.D, 0
         Q_lvl[Dd[v]].append(v)
+        if Dd[v] > top_lvl:
+            top_lvl = Dd[v]
         if nxt == Dd[v] + 1:
             Q_bfs.extend(PQ[nxt])
             nxt += 1
@@ -231,11 +236,13 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                     if D[s][w] > D[s][v] and flag[w] != State.D:
                         flag[w] = State.D
                         Q_lvl[Dd[w]].append(w)
+                        if Dd[w] > top_lvl:
+                            top_lvl = Dd[w]
                         Q_bfs.append(w)
     Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
-    level = G.number_of_nodes()
+    level = top_lvl
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
@@ -249,16 +256,12 @@ def algorithm_7(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Del
                         a = (SP[s][w] / SP[s][v]) * (1 + Delta[s][v])
                     if flag[v] == State.U:
                         Delta_d[v] -= a
-            if w != s:
-                if math.isclose(0.0, round(bc[w], 4) + round(((Delta_d[w] - Delta[s][w]) / 2), 4)):
-                    bc[w] = 0.0
-                else:
-                    bc[w] += (Delta_d[w] - Delta[s][w]) / 2
+
         level -= 1
-    return bc, Dd, SPd, Delta_d, flag
+    return Dd, SPd, Delta_d, flag
 
 
-def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, Delta_d):
+def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, SP, SPd, D, Dd, Delta, Delta_d):
     Q_bfs = deque([u_low])
     Dd[u_low], SPd[u_low], Delta_d[u_low] = float("inf"), 0, 0
 
@@ -270,12 +273,11 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
                     Q_bfs.append(w)
                     flag[w] = State.M
                     Dd[w], SPd[w], Delta_d[w] = float("inf"), 0, 0
-                bc[v] -= ((SP[s][v]/SP[s][w]) * (1 + Delta[s][w]))/2
 
     Delta_d[u_high] = Delta[s][u_high] - ((SP[s][u_high]/SP[s][u_low]) * (1 + Delta[s][u_low]))
     Q_lvl[Dd[u_high]].append(u_high)
     flag[u_high] = State.U
-    level = G.number_of_nodes()
+    level = Dd[u_high]
     while level > 0:
         while Q_lvl[level]:
             w = Q_lvl[level].pop()
@@ -284,10 +286,8 @@ def algorithm_10(G, s, u_low, u_high, Q_lvl, flag, bc, SP, SPd, D, Dd, Delta, De
                     flag, Delta_d, Q_lvl, a = algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level)
                     if flag[v] == State.U:
                         Delta_d[v] -= a
-            if w != s:
-                bc[w] += (Delta_d[w] - Delta[s][w])/2
         level -= 1
-    return bc, Dd, SPd, Delta_d, flag
+    return Dd, SPd, Delta_d, flag
 
 
 def find_lowest_highest(s, u1, u2, D):

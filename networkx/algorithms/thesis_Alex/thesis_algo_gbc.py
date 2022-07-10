@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 
-def dynamic_group_betweenness_gbc(G, C, bc, D, sigma, Delta, edge, operation, normalized=True, endpoints=True):
+def dynamic_group_betweenness_gbc(G, C, D, sigma, Delta, edge, operation, normalized=True, endpoints=True):
     GBC = []  # initialize betweenness
     list_of_groups = True
     #  check weather C contains one or many groups
@@ -19,8 +19,8 @@ def dynamic_group_betweenness_gbc(G, C, bc, D, sigma, Delta, edge, operation, no
     if set_v - G.nodes:  # element(s) of C not in G
         raise nx.NodeNotFound(f"The node(s) {set_v - G.nodes} are in C but not in G.")
 
-    G_new, bc_new, PB, D_new, sigma_new, Delta_new = \
-        _dynamic_preprocessing_gbc(G, set_v, bc, D, sigma, Delta, edge, operation)
+    G_new, PB, D_new, sigma_new, Delta_new = \
+        _dynamic_preprocessing_gbc(G, set_v, D, sigma, Delta, edge, operation)
 
     # the algorithm for each group
     for group in C:
@@ -87,13 +87,13 @@ def dynamic_group_betweenness_gbc(G, C, bc, D, sigma, Delta, edge, operation, no
         GBC.append(GBC_group)
 
     if list_of_groups:
-        return GBC, G_new, bc_new, PB, D_new, sigma_new, Delta_new
+        return GBC, G_new, D_new, sigma_new, Delta_new
     else:
-        return GBC[0], G_new, bc_new, PB, D_new, sigma_new, Delta_new
+        return GBC[0], G_new, D_new, sigma_new, Delta_new
 
 
-def _dynamic_preprocessing_gbc(G, set_v, bc, D, sigma, Delta, edge, operation):
-    G_new, bc_new, D_new, sigma_new, Delta_new = algorithm_1_gbc(G, bc, D, sigma, Delta, edge, operation)
+def _dynamic_preprocessing_gbc(G, set_v, D, sigma, Delta, edge, operation):
+    G_new, D_new, sigma_new, Delta_new = algorithm_1_gbc(G, D, sigma, Delta, edge, operation)
     Delta_pre = deepcopy(Delta_new)
     for s in G_new:
         for i in G_new:
@@ -123,4 +123,4 @@ def _dynamic_preprocessing_gbc(G, set_v, bc, D, sigma, Delta, edge, operation):
                                 * sigma_new[group_node1][group_node2]
                                 / sigma_new[node][group_node2]
                         )
-    return G_new, bc_new, PB, D_new, sigma_new, Delta_new
+    return G_new, PB, D_new, sigma_new, Delta_new
