@@ -1,14 +1,14 @@
 import networkx as nx
-from networkx.algorithms.thesis_Alex.kourtellis_old import algorithm_1_old
+from networkx.algorithms.thesis_Alex.kourtellis_gbc import algorithm_1_gbc
 from copy import deepcopy
 
 
 __all__ = [
-    "dynamic_group_betweenness_old",
+    "dynamic_group_betweenness_gbc",
 ]
 
 
-def dynamic_group_betweenness_old(G, C, bc, D, sigma, Delta, edge, operation, normalized=True, endpoints=True):
+def dynamic_group_betweenness_gbc(G, C, bc, D, sigma, Delta, edge, operation, normalized=True, endpoints=True):
     GBC = []  # initialize betweenness
     list_of_groups = True
     #  check weather C contains one or many groups
@@ -20,7 +20,7 @@ def dynamic_group_betweenness_old(G, C, bc, D, sigma, Delta, edge, operation, no
         raise nx.NodeNotFound(f"The node(s) {set_v - G.nodes} are in C but not in G.")
 
     G_new, bc_new, PB, D_new, sigma_new, Delta_new = \
-        _dynamic_preprocessing_old(G, set_v, bc, D, sigma, Delta, edge, operation)
+        _dynamic_preprocessing_gbc(G, set_v, bc, D, sigma, Delta, edge, operation)
 
     # the algorithm for each group
     for group in C:
@@ -92,8 +92,8 @@ def dynamic_group_betweenness_old(G, C, bc, D, sigma, Delta, edge, operation, no
         return GBC[0], G_new, bc_new, PB, D_new, sigma_new, Delta_new
 
 
-def _dynamic_preprocessing_old(G, set_v, bc, D, sigma, Delta, edge, operation):
-    G_new, bc_new, D_new, sigma_new, Delta_new = algorithm_1_old(G, bc, D, sigma, Delta, edge, operation)
+def _dynamic_preprocessing_gbc(G, set_v, bc, D, sigma, Delta, edge, operation):
+    G_new, bc_new, D_new, sigma_new, Delta_new = algorithm_1_gbc(G, bc, D, sigma, Delta, edge, operation)
     Delta_pre = deepcopy(Delta_new)
     for s in G_new:
         for i in G_new:
