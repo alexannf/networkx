@@ -14,7 +14,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn.remove_edge('2', '3')
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('2', '3'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('2', '3'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -33,7 +33,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn.remove_edge('6', '7')
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('6', '7'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('6', '7'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -52,7 +52,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn.remove_edge('C', 'Z')
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('C', 'Z'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('C', 'Z'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -71,7 +71,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn.remove_edge('69', '420')
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('69', '420'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('69', '420'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -84,7 +84,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.incomplete_square()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('3', '4'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('3', '4'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -99,7 +99,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.complete_square()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('3', '4'), "remove", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('3', '4'), "remove", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -117,7 +117,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn.remove_edge('5', 'F')
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('5', 'F'), "add", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('5', 'F'), "add", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -133,7 +133,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.trondheim_graph()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('1', '2'), "remove", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('1', '2'), "remove", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -150,7 +150,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.line_length_5()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('3', '4'), "remove", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('3', '4'), "remove", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -165,7 +165,7 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.trondheim_graph()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc(G_dyn, ('B', 'D'), "remove", endpoints=True)
+        G_new, bc_new, D_new, SP_new, Delta_new = nx.kourtellis_dynamic_bc_old(G_dyn, ('B', 'D'), "remove", endpoints=True)
 
         for s in sorted(G):
             assert pytest.approx(bc_new[s], abs=1e-7) == bc[s]
@@ -178,8 +178,8 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.line_length_5()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc, D, SP, Delta, ('3', '4'), "remove")
-        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1(G_rem, bc2, D2, SP2, Delta2, ('3', '4'), "add")
+        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc, D, SP, Delta, ('3', '4'), "remove")
+        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1_old(G_rem, bc2, D2, SP2, Delta2, ('3', '4'), "add")
 
         for s in sorted(G):
             assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
@@ -196,8 +196,8 @@ class TestKourtellisBetweennessEndpoints:
         G_dyn = g.trondheim_graph()
 
         bc, D, SP, Delta = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc, D, SP, Delta, ('B', 'D'), "remove")
-        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1(G_rem, bc2, D2, SP2, Delta2, ('B', 'D'), "add")
+        G_rem, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc, D, SP, Delta, ('B', 'D'), "remove")
+        G_dyn, bc3, D3, SP3, Delta3 = nx.algorithm_1_old(G_rem, bc2, D2, SP2, Delta2, ('B', 'D'), "add")
 
         for s in sorted(G):
             assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
@@ -222,7 +222,7 @@ class TestKourtellisBetweennessEndpoints:
             G.remove_edge(edge[0], edge[1])
 
             bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
+            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
 
             for s in sorted(G):
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
@@ -247,7 +247,7 @@ class TestKourtellisBetweennessEndpoints:
             G.remove_edge(edge[0], edge[1])
 
             bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
+            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
 
             for s in sorted(G):
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
@@ -273,7 +273,7 @@ class TestKourtellisBetweennessEndpoints:
             G_bc.add_edge(edge[0], edge[1])
 
             bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G_bc, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "add")
+            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc2, D2, SP2, Delta2, edge, "add")
 
             for s in sorted(G_bc):
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
@@ -296,7 +296,7 @@ class TestKourtellisBetweennessEndpoints:
             G.remove_edge(edge[0], edge[1])
 
             bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, endpoints=True, normalized=False, xtra_data=True)
-            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
+            G_dyn, bc2, D2, SP2, Delta2 = nx.algorithm_1_old(G_dyn, bc2, D2, SP2, Delta2, edge, "remove")
 
             for s in sorted(G):
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]

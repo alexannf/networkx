@@ -28,7 +28,7 @@ def compare_kourtellis_bc(G, edge, operation, old=False):
     bc2 = nx.betweenness_centrality(G_new, normalized=False)
     print("bc2: {}\n".format(bc2))
 
-    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc_old(G, edge, operation)
     print("bc3: {}\n\n".format(bc3))
 
 
@@ -48,7 +48,7 @@ def compare_kourtellis_D(G, edge, operation, old=False):
     print("D2:")
     pretty_print(D2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
     print("D3:")
     pretty_print(D3)
 
@@ -69,7 +69,7 @@ def compare_kourtellis_SP(G, edge, operation, old=False):
     print("SP2:")
     pretty_print(SP2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
     print("SP3:")
     pretty_print(SP3)
 
@@ -90,7 +90,7 @@ def compare_kourtellis_Delta(G, edge, operation, old=False):
     print("Delta 2:")
     pretty_print(Delta2)
 
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
     print("Delta 3:")
     pretty_print(Delta3)
 
@@ -107,7 +107,7 @@ def compare_kourtellis_no_print(G, edge, operation, old=False):
 
     bc2 = nx.betweenness_centrality(G_new, normalized=False)
 
-    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D, SP, Delta = nx.kourtellis_dynamic_bc_old(G, edge, operation)
 
 
 def side_side_compare_kourtellis_bc(G, edge, operation, old=False, diff=False):
@@ -119,7 +119,7 @@ def side_side_compare_kourtellis_bc(G, edge, operation, old=False, diff=False):
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     bc2, D2, SP2, Delta2 = nx.betweenness_centrality(G_new, normalized=False, xtra_data=True)
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
 
     print("\n")
 
@@ -141,7 +141,7 @@ def side_side_compare_kourtellis_D(G, edge, operation, old=False):
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     bc2, D2, SP2, Delta2 = nx.betweenness_centrality(G_new, normalized=False, xtra_data=True)
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
 
     for s in G_dyn:
         if old:
@@ -159,7 +159,7 @@ def side_side_compare_kourtellis_SP(G, edge, operation, old=False):
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     bc2, D2, SP2, Delta2 = nx.betweenness_centrality(G_new, normalized=False, xtra_data=True)
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
 
     for s in G_dyn:
         if old:
@@ -177,7 +177,7 @@ def side_side_compare_kourtellis_delta(G, edge, operation, old=False):
 
     bc1, D1, SP1, Delta1 = nx.betweenness_centrality(G, normalized=False, xtra_data=True)
     bc2, D2, SP2, Delta2 = nx.betweenness_centrality(G_new, normalized=False, xtra_data=True)
-    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc(G, edge, operation)
+    G_dyn, bc3, D3, SP3, Delta3 = nx.kourtellis_dynamic_bc_old(G, edge, operation)
 
     for s in G_dyn:
         if old:

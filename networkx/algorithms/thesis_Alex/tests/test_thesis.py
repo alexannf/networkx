@@ -1,7 +1,7 @@
 import pytest
 import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
-from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness_old
 from networkx.algorithms.thesis_Alex.setup import get_groups
 
 
@@ -16,7 +16,7 @@ class TestThesisGroupBetweenness:
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('3', '4'), "add", normalized=False, endpoints=True)
 
         GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
@@ -40,7 +40,7 @@ class TestThesisGroupBetweenness:
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('3', '4'), "remove", normalized=False, endpoints=True)
 
         GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
@@ -66,7 +66,7 @@ class TestThesisGroupBetweenness:
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('5', 'F'), "add", normalized=False, endpoints=True)
 
         GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
@@ -91,7 +91,7 @@ class TestThesisGroupBetweenness:
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('1', '2'), "remove", normalized=False, endpoints=True)
 
         GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(
@@ -118,11 +118,11 @@ class TestThesisGroupBetweenness:
             G_dyn, groups, normalized=False, endpoints=True, xtra_data=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_dyn, groups, bc_in, D_in, sigma_in, Delta_in, ('B', 'D'), "remove", normalized=False, endpoints=True)
 
         GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-            dynamic_group_betweenness(
+            dynamic_group_betweenness_old(
                 G_new, groups, bc_new, D_new, sigma_new, Delta_new, ('B', 'D'), "add", normalized=False, endpoints=True)
 
         for group_dyn, group in zip(GBC_new, GBC):
@@ -153,7 +153,7 @@ class TestThesisGroupBetweenness:
                 G_bc, groups, normalized=False, endpoints=True, xtra_data=True)
 
             GBC2, G_dyn, bc2, PB2, D2, sigma2, Delta2 = \
-                dynamic_group_betweenness(
+                dynamic_group_betweenness_old(
                     G_dyn, groups, bc2, D2, sigma2, Delta2, edge, "add", normalized=False,
                     endpoints=True)
 
@@ -185,7 +185,7 @@ class TestThesisGroupBetweenness:
                 G, groups, normalized=False, endpoints=True, xtra_data=True)
 
             GBC2, G_dyn, bc2, PB2, D2, sigma2, Delta2 = \
-                dynamic_group_betweenness(
+                dynamic_group_betweenness_old(
                     G_dyn, groups, bc2, D2, sigma2, Delta2, edge, "remove", normalized=False,
                     endpoints=True)
 

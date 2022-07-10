@@ -7,8 +7,8 @@ from enum import Enum
 import pprint
 
 __all__ = [
-    "kourtellis_dynamic_bc",
-    "algorithm_1",
+    "kourtellis_dynamic_bc_old",
+    "algorithm_1_old",
 ]
 
 
@@ -26,17 +26,17 @@ class Operation(Enum):
     D = "remove"
 
 
-def kourtellis_dynamic_bc(G, new_edge, operation, endpoints=False):
+def kourtellis_dynamic_bc_old(G, new_edge, operation, endpoints=False):
     if endpoints:
         bc, D, SP, Delta = nx.betweenness_centrality(G, xtra_data=True, normalized=False, endpoints=True)
     else:
         bc, D, SP, Delta = nx.betweenness_centrality(G, xtra_data=True, normalized=False)
 
-    G_new, bc, D, SP, Delta = algorithm_1(G, bc, D, SP, Delta, new_edge, operation)
+    G_new, bc, D, SP, Delta = algorithm_1_old(G, bc, D, SP, Delta, new_edge, operation)
     return G_new, bc, D, SP, Delta
 
 
-def algorithm_1(G, bc, D, SP, Delta, edge, operation):
+def algorithm_1_old(G, bc, D, SP, Delta, edge, operation):
     if not (operation == "add" or operation == "remove"):
         raise TypeError("edge operation must be add or remove")
 

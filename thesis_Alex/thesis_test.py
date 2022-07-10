@@ -1,7 +1,7 @@
 import networkx as nx
 import networkx.algorithms.thesis_Alex.utils.graphs as g
 import networkx.algorithms.thesis_Alex.utils.utils as u
-from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness
+from networkx.algorithms.thesis_Alex.thesis_algo_old import dynamic_group_betweenness_old
 from copy import deepcopy
 
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     D_cop, sigma_cop, Delta_cop = deepcopy(D_in), deepcopy(sigma_in), deepcopy(Delta_in)
 
     GBC_new, G_new, bc_new, PB_new, D_new, sigma_new, Delta_new = \
-        dynamic_group_betweenness(
+        dynamic_group_betweenness_old(
             G_dyn, groups, bc_cop, D_cop, sigma_cop, Delta_cop, ('3', '4'), "add", normalized=False, endpoints=True)
 
     for v in G:
