@@ -47,7 +47,7 @@ def algorithm_1_gbc(G, D, SP, Delta, edge, operation):
 
         if dd >= 1:
             for r in G:
-                if r not in D[s]:
+                if r not in D[s] or r not in Delta[s]:
                     D[s][r], Delta[s][r] = float("inf"), 0
                 Dd[r], SPd[r], Delta_d[r] = D[s][r], SP[s][r], 0  # initialize dynamic data structures
                 flag[r] = State.N
