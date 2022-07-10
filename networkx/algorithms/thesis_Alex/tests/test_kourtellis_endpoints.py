@@ -185,7 +185,11 @@ class TestKourtellisBetweennessEndpoints:
             assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
 
             for t in sorted(G):
+                if t not in D[s]:
+                    D[s][t], Delta[s][t] = float("inf"), 0
+                assert pytest.approx(D3[s][t], abs=1e-7) == D[s][t]
                 assert pytest.approx(SP3[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(Delta3[s][t], abs=1e-7) == Delta[s][t]
 
     def test_edge_reconnection_disconnected_graph_trondheim(self):
         G = g.trondheim_graph()
@@ -199,7 +203,11 @@ class TestKourtellisBetweennessEndpoints:
             assert pytest.approx(bc3[s], abs=1e-7) == bc[s]
 
             for t in sorted(G):
+                if t not in D[s]:
+                    D[s][t], Delta[s][t] = float("inf"), 0
+                assert pytest.approx(D3[s][t], abs=1e-7) == D[s][t]
                 assert pytest.approx(SP3[s][t], abs=1e-7) == SP[s][t]
+                assert pytest.approx(Delta3[s][t], abs=1e-7) == Delta[s][t]
 
     @pytest.mark.skip(reason="not relevant for experiments")
     def test_deconstruct_trondheim(self):
@@ -220,7 +228,11 @@ class TestKourtellisBetweennessEndpoints:
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
 
                 for t in sorted(G):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]
 
     @pytest.mark.skip(reason="not relevant for experiments")
     def test_deconstruct_social(self):
@@ -241,7 +253,11 @@ class TestKourtellisBetweennessEndpoints:
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
 
                 for t in sorted(G):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]
 
     def test_construct_facebook_0(self):
         G = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
@@ -263,7 +279,11 @@ class TestKourtellisBetweennessEndpoints:
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
 
                 for t in sorted(G_bc):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]
 
     def test_deconstruct_facebook(self):
         G = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
@@ -282,4 +302,10 @@ class TestKourtellisBetweennessEndpoints:
                 assert pytest.approx(bc2[s], abs=1e-7) == bc1[s]
 
                 for t in sorted(G):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    if t not in D2[s]:
+                        D2[s][t], Delta2[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(SP2[s][t], abs=1e-7) == SP1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]

@@ -162,7 +162,13 @@ class TestThesisGroupBetweenness:
 
             for s in sorted(G_bc):
                 for t in sorted(G_bc):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    if t not in D2[s]:
+                        D2[s][t], Delta2[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(sigma2[s][t], abs=1e-7) == sigma1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]
 
     def test_deconstruct_facebook(self):
         G = nx.read_edgelist("C:/Users/alex/networkX/Datasets/facebook/0.edges")
@@ -188,4 +194,10 @@ class TestThesisGroupBetweenness:
 
             for s in sorted(G):
                 for t in sorted(G):
+                    if t not in D1[s]:
+                        D1[s][t], Delta1[s][t] = float("inf"), 0
+                    if t not in D2[s] or t not in Delta2[s]:
+                        D2[s][t], Delta2[s][t] = float("inf"), 0
+                    assert pytest.approx(D2[s][t], abs=1e-7) == D1[s][t]
                     assert pytest.approx(sigma2[s][t], abs=1e-7) == sigma1[s][t]
+                    assert pytest.approx(Delta2[s][t], abs=1e-7) == Delta1[s][t]
