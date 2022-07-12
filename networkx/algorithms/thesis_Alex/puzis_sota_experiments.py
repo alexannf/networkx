@@ -12,7 +12,7 @@ __all__ = [
 dirname = dirname(dirname(dirname(dirname(abspath(__file__)))))
 
 
-def puzis_state_of_the_art_add(G, edge_stream, groups, edge_stream_size, group_size, num_groups, category, dataset):
+def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset):
     G_dyn = deepcopy(G)
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
@@ -20,7 +20,7 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, edge_stream_size, group_s
     file = open(filename, "w")
     file.write("puzis SotA, operation = add, graph nodes = {}, graph edges {}, edge stream size = {}, "
                "groups size = {}, number of groups = {}\n".format(G.number_of_nodes(), G.number_of_edges(),
-                                                                  edge_stream_size, group_size, num_groups))
+                                                                  len(edge_stream), len(groups[0]), len(groups)))
     cnt = 1
     total_time = 0.0
     print("\npuzis SotA add:")
@@ -36,7 +36,7 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, edge_stream_size, group_s
     file.close()
 
 
-def puzis_state_of_the_art_remove(G, edge_stream, groups, edge_stream_size, group_size, num_groups, category, dataset):
+def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset):
     G_dyn = deepcopy(G)
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
@@ -44,7 +44,7 @@ def puzis_state_of_the_art_remove(G, edge_stream, groups, edge_stream_size, grou
     file = open(filename, "w")
     file.write("puzis SotA, operation = remove, graph nodes = {}, graph edges {}, edge stream size = {}, "
                "groups size = {}, number of groups = {}\n".format(G.number_of_nodes(), G.number_of_edges(),
-                                                                  edge_stream_size, group_size, num_groups))
+                                                                  len(edge_stream), len(groups[0]), len(groups)))
     cnt = 1
     total_time = 0.0
     print("\npuzis SotA remove:")
