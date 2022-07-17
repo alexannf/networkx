@@ -6,6 +6,7 @@ dirname = dirname(dirname(dirname(dirname(abspath(__file__)))))
 
 __all__ = [
     "setup",
+    "setup_2",
     "get_groups",
 ]
 
@@ -32,3 +33,14 @@ def setup(operation, edge_stream_size, group_size, num_groups, category, dataset
         G.remove_edges_from(edge_stream)
     groups = get_groups(G, group_size, num_groups)
     return G, edge_stream, groups
+
+
+def setup_2(operation, edge_stream, category, dataset):
+    if not (operation == "add" or operation == "remove"):
+        raise TypeError("edge operation must be add or remove")
+
+    filename = join(dirname, 'thesis_Alex/datasets/' + category + '/' + dataset + '.edges')
+    G = nx.read_edgelist(filename)
+    if operation == "add":
+        G.remove_edges_from(edge_stream)
+    return G
