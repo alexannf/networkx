@@ -12,10 +12,10 @@ if __name__ == '__main__':
 
     puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, "facebook", "0")
     thesis_add_gbc(G_add, edge_stream_add, groups_add, "facebook", "0", space=False)
-    thesis_add_gbc(G_add, edge_stream_add, groups_add, "facebook", "0", space=True)
+    # thesis_add_gbc(G_add, edge_stream_add, groups_add, "facebook", "0", space=True)
 
     puzis_state_of_the_art_remove(G_rem, edge_stream_rem, groups_rem, "facebook", "0")
     thesis_remove_gbc(G_rem, edge_stream_rem, groups_rem, "facebook", "0", space=False)
-    thesis_remove_gbc(G_rem, edge_stream_rem, groups_rem, "facebook", "0", space=True)
+    # thesis_remove_gbc(G_rem, edge_stream_rem, groups_rem, "facebook", "0", space=True)
 
 
