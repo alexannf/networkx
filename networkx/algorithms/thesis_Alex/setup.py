@@ -30,7 +30,6 @@ def setup(operation, edge_stream_size, group_size, num_groups, category, dataset
 
     filename = join(dirname, 'thesis_Alex/datasets/' + category + '/' + dataset + '.edges')
     G = nx.read_edgelist(filename)
-    num_nodes = G.number_of_nodes()
 
     edge_stream = rd.sample(G.edges, edge_stream_size)
     if operation == "add":
