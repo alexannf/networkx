@@ -5,8 +5,8 @@ from networkx.algorithms.thesis_Alex.setup import *
 if __name__ == '__main__':
     G_add, edge_stream_add, groups_add = setup("add", 100, 10, 10, "synthetic", "1000")
 
-    puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=False)
-    thesis_add_gbc(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=False)
+    # puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=False)
+    # thesis_add_gbc(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=False)
 
     puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=True)
     thesis_add_gbc(G_add, edge_stream_add, groups_add, "synthetic", "1000", space=True)

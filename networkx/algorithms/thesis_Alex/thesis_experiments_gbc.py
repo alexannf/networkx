@@ -32,17 +32,16 @@ def thesis_add_gbc(G, edge_stream, groups, category, dataset, space=False):
     print("\nthesis add new:")
 
     if space:
-        tracemalloc.start()
         for edge in edge_stream:
             cnt += 1
-            tracemalloc.reset_peak()
+            tracemalloc.start()
             #  returns new graph G_dyn with new edge added
             GBC, G_dyn, D, sigma, Delta = \
                 dynamic_group_betweenness_gbc(G_dyn, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
             mem_size = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
             print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
             file.write("{}, {}, space\n".format(cnt, mem_size[1]))
-        tracemalloc.stop()
         file.close()
     else:
         for edge in edge_stream:
@@ -79,18 +78,17 @@ def thesis_remove_gbc(G, edge_stream, groups, category, dataset, space=False):
 
     print("\nthesis remove new:")
     if space:
-        tracemalloc.start()
         for edge in edge_stream:
             cnt += 1
-            tracemalloc.reset_peak()
+            tracemalloc.start()
             #  returns new graph G_dyn with new edge removed
             GBC, G_dyn, D, sigma, Delta = \
                 dynamic_group_betweenness_gbc(
                     G_dyn, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True)
             mem_size = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
             print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
             file.write("{}, {}, space\n".format(cnt, mem_size[1]))
-        tracemalloc.stop()
         file.close()
     else:
         for edge in edge_stream:

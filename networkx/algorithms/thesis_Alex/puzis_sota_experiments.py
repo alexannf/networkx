@@ -26,16 +26,15 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset, space=
     total_time = 0.0
     print("\npuzis SotA add:")
     if space:
-        tracemalloc.start()
         for edge in edge_stream:
             G_dyn.add_edge(edge[0], edge[1])
-            tracemalloc.reset_peak()
+            tracemalloc.start()
             nx.group_betweenness_centrality(G_dyn, groups)
             mem_size = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
             print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
             file.write("{}, {}, space\n".format(cnt, mem_size[1]))
             cnt += 1
-        tracemalloc.stop()
         file.close()
     else:
         for edge in edge_stream:
@@ -64,16 +63,15 @@ def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset, spa
     print("\npuzis SotA remove:")
 
     if space:
-        tracemalloc.start()
         for edge in edge_stream:
             G_dyn.remove_edge(edge[0], edge[1])
-            tracemalloc.reset_peak()
+            tracemalloc.start()
             nx.group_betweenness_centrality(G_dyn, groups)
             mem_size = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
             print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
             file.write("{}, {}, space\n".format(cnt, mem_size[1]))
             cnt += 1
-        tracemalloc.stop()
         file.close()
     else:
         for edge in edge_stream:
