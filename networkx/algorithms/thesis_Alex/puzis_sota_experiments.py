@@ -3,6 +3,7 @@ from time import time
 from datetime import datetime
 from os.path import dirname, abspath, join
 from copy import deepcopy
+import tracemalloc
 
 __all__ = [
     "puzis_state_of_the_art_add",
@@ -12,7 +13,7 @@ __all__ = [
 dirname = dirname(dirname(dirname(dirname(abspath(__file__)))))
 
 
-def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset):
+def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset, space=False):
     G_dyn = deepcopy(G)
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
@@ -24,19 +25,32 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset):
     cnt = 1
     total_time = 0.0
     print("\npuzis SotA add:")
-    for edge in edge_stream:
-        G_dyn.add_edge(edge[0], edge[1])
-        clk_start = time()
-        nx.group_betweenness_centrality(G_dyn, groups)
-        clk_end = time()
-        total_time += clk_end - clk_start
-        print("total run time after {}. iteration: {}".format(cnt, total_time))
-        file.write("{}, {}\n".format(cnt, total_time))
-        cnt += 1
-    file.close()
+    if space:
+        tracemalloc.start()
+        for edge in edge_stream:
+            G_dyn.add_edge(edge[0], edge[1])
+            tracemalloc.reset_peak()
+            nx.group_betweenness_centrality(G_dyn, groups)
+            mem_size = tracemalloc.get_traced_memory()
+            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
+            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
+            cnt += 1
+        tracemalloc.stop()
+        file.close()
+    else:
+        for edge in edge_stream:
+            G_dyn.add_edge(edge[0], edge[1])
+            clk_start = time()
+            nx.group_betweenness_centrality(G_dyn, groups)
+            clk_end = time()
+            total_time += clk_end - clk_start
+            print("total run time after {}. iteration: {}".format(cnt, total_time))
+            file.write("{}, {}\n".format(cnt, total_time))
+            cnt += 1
+        file.close()
 
 
-def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset):
+def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset, space=False):
     G_dyn = deepcopy(G)
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
@@ -48,13 +62,27 @@ def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset):
     cnt = 1
     total_time = 0.0
     print("\npuzis SotA remove:")
-    for edge in edge_stream:
-        G_dyn.remove_edge(edge[0], edge[1])
-        clk_start = time()
-        nx.group_betweenness_centrality(G_dyn, groups)
-        clk_end = time()
-        total_time += clk_end - clk_start
-        print("total run time after {}. iteration: {}".format(cnt, total_time))
-        file.write("{}, {}\n".format(cnt, total_time))
-        cnt += 1
+
+    if space:
+        tracemalloc.start()
+        for edge in edge_stream:
+            G_dyn.remove_edge(edge[0], edge[1])
+            tracemalloc.reset_peak()
+            nx.group_betweenness_centrality(G_dyn, groups)
+            mem_size = tracemalloc.get_traced_memory()
+            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
+            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
+            cnt += 1
+        tracemalloc.stop()
+        file.close()
+    else:
+        for edge in edge_stream:
+            G_dyn.remove_edge(edge[0], edge[1])
+            clk_start = time()
+            nx.group_betweenness_centrality(G_dyn, groups)
+            clk_end = time()
+            total_time += clk_end - clk_start
+            print("total run time after {}. iteration: {}".format(cnt, total_time))
+            file.write("{}, {}\n".format(cnt, total_time))
+            cnt += 1
     file.close()

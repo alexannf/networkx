@@ -1,5 +1,4 @@
 import networkx as nx
-from datetime import datetime
 from os.path import dirname, abspath, join
 
 dirname = dirname(abspath(__file__))
