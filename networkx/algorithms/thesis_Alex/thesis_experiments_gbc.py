@@ -92,11 +92,6 @@ def thesis_remove_gbc(G, edge_stream, groups, category, dataset, space=False):
                 mem_peak = max(mem_peak_init, mem_peak)
             print("space peak after {}. iteration: {}".format(cnt, mem_peak))
             file.write("{}, {}, space\n".format(cnt, mem_peak))
-
-            #  returns new graph G_dyn with new edge removed
-            GBC, G_dyn, D, sigma, Delta = \
-                dynamic_group_betweenness_gbc(
-                    G_dyn, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True)
         file.close()
 
     else:

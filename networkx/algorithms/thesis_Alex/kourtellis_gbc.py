@@ -132,6 +132,8 @@ def algorithm_3(s, v, w, flag, Delta, Delta_d, SP, SPd, Q_lvl, level):
         flag[v] = State.U
         Delta_d[v] = Delta[s][v]
         Q_lvl[level-1].append(v)
+    if SPd[w] == 0:
+        SPd[w] = 1
     Delta_d[v] += (SPd[v]/SPd[w]) * (1 + Delta_d[w])
     if SP[s][w] == 0:
         SP[s][w] = 1
