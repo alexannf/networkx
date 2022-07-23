@@ -25,26 +25,21 @@ def thesis_add_gbc(G, edge_stream, groups, category, dataset, space=False):
                                                                   len(edge_stream), len(groups[0]), len(groups)))
     cnt = 0
     if space:
-        G_space = deepcopy(G_dyn)
-        mem_usage_init = memory_usage(nx.group_betweenness_centrality(G_space, groups, endpoints=True, xtra_data=True))
-        mem_peak_init = max(mem_usage_init)
-        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
-
+        mem_peak_init, data = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups, True, None, True, True)),
+                                           retval=True, max_usage=True)
+        GBC, bc, PB, D, sigma, Delta = data
         print("\nthesis add new:")
         for edge in edge_stream:
             cnt += 1
-            G_space = deepcopy(G_dyn)
-            mem_usage = memory_usage(dynamic_group_betweenness_gbc(
-                G_space, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True))
-            mem_peak = max(mem_usage)
+            mem_peak, data = memory_usage((dynamic_group_betweenness_gbc,
+                                           (G_dyn, groups, D, sigma, Delta, edge, "add", True, True)),
+                                          retval=True, max_usage=True)
+
+            GBC, G_dyn, D, sigma, Delta = data  # graph G_dyn here has new edge added
             if cnt == 1:
                 mem_peak = max(mem_peak_init, mem_peak)
             print("space peak after {}. iteration: {}".format(cnt, mem_peak))
             file.write("{}, {}, space\n".format(cnt, mem_peak))
-
-            #  returns new graph G_dyn with new edge added
-            GBC, G_dyn, D, sigma, Delta = dynamic_group_betweenness_gbc(
-                G_dyn, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
         file.close()
 
     else:
@@ -82,18 +77,17 @@ def thesis_remove_gbc(G, edge_stream, groups, category, dataset, space=False):
                                                                   len(edge_stream), len(groups[0]), len(groups)))
     cnt = 0
     if space:
-        G_space = deepcopy(G_dyn)
-        mem_usage_init = memory_usage(nx.group_betweenness_centrality(G_space, groups, endpoints=True, xtra_data=True))
-        mem_peak_init = max(mem_usage_init)
-        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
-
+        mem_peak_init, data = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups, True, None, True, True)),
+                                           retval=True, max_usage=True)
+        GBC, bc, PB, D, sigma, Delta = data
         print("\nthesis remove new:")
         for edge in edge_stream:
             cnt += 1
-            G_space = deepcopy(G_dyn)
-            mem_usage = memory_usage(dynamic_group_betweenness_gbc(
-                G_space, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True))
-            mem_peak = max(mem_usage)
+            mem_peak, data = memory_usage((dynamic_group_betweenness_gbc,
+                                           (G_dyn, groups, D, sigma, Delta, edge, "remove", True, True)),
+                                          retval=True, max_usage=True)
+
+            GBC, G_dyn, D, sigma, Delta = data  # graph G_dyn here has new edge added
             if cnt == 1:
                 mem_peak = max(mem_peak_init, mem_peak)
             print("space peak after {}. iteration: {}".format(cnt, mem_peak))
