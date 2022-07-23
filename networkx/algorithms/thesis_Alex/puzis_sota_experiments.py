@@ -28,9 +28,11 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset, space=
     if space:
         for edge in edge_stream:
             G_dyn.add_edge(edge[0], edge[1])
-            mem_peak = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups)), max_usage=True)
-            print("space peak at {}. iteration: {}".format(cnt, mem_peak))
-            file.write("{}, {}, space\n".format(cnt, mem_peak))
+            mem_usage = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups)))
+            mem_avg = sum(mem_usage) / (len(mem_usage))
+            mem_peak = max(mem_usage)
+            print("{}. iteration: space average = {}, space peak = {}".format(cnt, mem_avg, mem_peak))
+            file.write("{}, {}, {}\n".format(cnt, mem_avg, mem_peak))
             cnt += 1
         file.close()
     else:
@@ -62,9 +64,11 @@ def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset, spa
     if space:
         for edge in edge_stream:
             G_dyn.remove_edge(edge[0], edge[1])
-            mem_peak = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups)), max_usage=True)
-            print("space peak at {}. iteration: {}".format(cnt, mem_peak))
-            file.write("{}, {}, space\n".format(cnt, mem_peak))
+            mem_usage = memory_usage((nx.group_betweenness_centrality, (G_dyn, groups)))
+            mem_avg = sum(mem_usage) / (len(mem_usage))
+            mem_peak = max(mem_usage)
+            print("{}. iteration: space average = {}, space peak = {}".format(cnt, mem_avg, mem_peak))
+            file.write("{}, {}, {}\n".format(cnt, mem_avg, mem_peak))
             cnt += 1
         file.close()
     else:
