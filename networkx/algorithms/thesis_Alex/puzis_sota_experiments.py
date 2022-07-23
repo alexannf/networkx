@@ -3,7 +3,7 @@ from time import time
 from datetime import datetime
 from os.path import dirname, abspath, join
 from copy import deepcopy
-import tracemalloc
+from memory_profiler import memory_usage
 
 __all__ = [
     "puzis_state_of_the_art_add",
@@ -28,12 +28,10 @@ def puzis_state_of_the_art_add(G, edge_stream, groups, category, dataset, space=
     if space:
         for edge in edge_stream:
             G_dyn.add_edge(edge[0], edge[1])
-            tracemalloc.start()
-            nx.group_betweenness_centrality(G_dyn, groups)
-            mem_size = tracemalloc.get_traced_memory()
-            tracemalloc.stop()
-            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
-            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
+            mem_usage = memory_usage(nx.group_betweenness_centrality(G_dyn, groups))
+            mem_peak = max(mem_usage)
+            print("space peak after {}. iteration: {}".format(cnt, mem_peak))
+            file.write("{}, {}, space\n".format(cnt, mem_peak))
             cnt += 1
         file.close()
     else:
@@ -65,12 +63,10 @@ def puzis_state_of_the_art_remove(G, edge_stream, groups, category, dataset, spa
     if space:
         for edge in edge_stream:
             G_dyn.remove_edge(edge[0], edge[1])
-            tracemalloc.start()
-            nx.group_betweenness_centrality(G_dyn, groups)
-            mem_size = tracemalloc.get_traced_memory()
-            tracemalloc.stop()
-            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
-            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
+            mem_usage = memory_usage(nx.group_betweenness_centrality(G_dyn, groups))
+            mem_peak = max(mem_usage)
+            print("space peak after {}. iteration: {}".format(cnt, mem_peak))
+            file.write("{}, {}, space\n".format(cnt, mem_peak))
             cnt += 1
         file.close()
     else:

@@ -4,7 +4,7 @@ from datetime import datetime
 from os.path import dirname, abspath, join
 from networkx.algorithms.thesis_Alex.thesis_algo_gbc import dynamic_group_betweenness_gbc
 from copy import deepcopy
-import tracemalloc
+from memory_profiler import memory_usage
 
 __all__ = [
     "thesis_add_gbc",
@@ -24,26 +24,37 @@ def thesis_add_gbc(G, edge_stream, groups, category, dataset, space=False):
                "groups size = {}, number of groups = {}\n".format(G.number_of_nodes(), G.number_of_edges(),
                                                                   len(edge_stream), len(groups[0]), len(groups)))
     cnt = 0
-    total_time = 0.0
-    clk_init_start = time()
-    GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
-    clk_init_stop = time()
-    clk_init = clk_init_stop - clk_init_start
-    print("\nthesis add new:")
-
     if space:
+        G_space = deepcopy(G_dyn)
+        mem_usage_init = memory_usage(nx.group_betweenness_centrality(G_space, groups, endpoints=True, xtra_data=True))
+        mem_peak_init = max(mem_usage_init)
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
+
+        print("\nthesis add new:")
         for edge in edge_stream:
             cnt += 1
-            tracemalloc.start()
+            G_space = deepcopy(G_dyn)
+            mem_usage = memory_usage(dynamic_group_betweenness_gbc(
+                G_space, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True))
+            mem_peak = max(mem_usage)
+            if cnt == 1:
+                mem_peak = max(mem_peak_init, mem_peak)
+            print("space peak after {}. iteration: {}".format(cnt, mem_peak))
+            file.write("{}, {}, space\n".format(cnt, mem_peak))
+
             #  returns new graph G_dyn with new edge added
-            GBC, G_dyn, D, sigma, Delta = \
-                dynamic_group_betweenness_gbc(G_dyn, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
-            mem_size = tracemalloc.get_traced_memory()
-            tracemalloc.stop()
-            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
-            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
+            GBC, G_dyn, D, sigma, Delta = dynamic_group_betweenness_gbc(
+                G_dyn, groups, D, sigma, Delta, edge, "add", normalized=True, endpoints=True)
         file.close()
+
     else:
+        total_time = 0.0
+        clk_init_start = time()
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
+        clk_init_stop = time()
+        clk_init = clk_init_stop - clk_init_start
+
+        print("\nthesis add new:")
         for edge in edge_stream:
             cnt += 1
             clk_start = time()
@@ -70,27 +81,38 @@ def thesis_remove_gbc(G, edge_stream, groups, category, dataset, space=False):
                "groups size = {}, number of groups = {}\n".format(G.number_of_nodes(), G.number_of_edges(),
                                                                   len(edge_stream), len(groups[0]), len(groups)))
     cnt = 0
-    total_time = 0.0
-    clk_init_start = time()
-    GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
-    clk_init_stop = time()
-    clk_init = clk_init_stop - clk_init_start
-
-    print("\nthesis remove new:")
     if space:
+        G_space = deepcopy(G_dyn)
+        mem_usage_init = memory_usage(nx.group_betweenness_centrality(G_space, groups, endpoints=True, xtra_data=True))
+        mem_peak_init = max(mem_usage_init)
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
+
+        print("\nthesis remove new:")
         for edge in edge_stream:
             cnt += 1
-            tracemalloc.start()
+            G_space = deepcopy(G_dyn)
+            mem_usage = memory_usage(dynamic_group_betweenness_gbc(
+                G_space, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True))
+            mem_peak = max(mem_usage)
+            if cnt == 1:
+                mem_peak = max(mem_peak_init, mem_peak)
+            print("space peak after {}. iteration: {}".format(cnt, mem_peak))
+            file.write("{}, {}, space\n".format(cnt, mem_peak))
+
             #  returns new graph G_dyn with new edge removed
             GBC, G_dyn, D, sigma, Delta = \
                 dynamic_group_betweenness_gbc(
                     G_dyn, groups, D, sigma, Delta, edge, "remove", normalized=True, endpoints=True)
-            mem_size = tracemalloc.get_traced_memory()
-            tracemalloc.stop()
-            print("space peak after {}. iteration: {}".format(cnt, mem_size[1]))
-            file.write("{}, {}, space\n".format(cnt, mem_size[1]))
         file.close()
+
     else:
+        total_time = 0.0
+        clk_init_start = time()
+        GBC, bc, PB, D, sigma, Delta = nx.group_betweenness_centrality(G_dyn, groups, endpoints=True, xtra_data=True)
+        clk_init_stop = time()
+        clk_init = clk_init_stop - clk_init_start
+
+        print("\nthesis remove new:")
         for edge in edge_stream:
             cnt += 1
             clk_start = time()
