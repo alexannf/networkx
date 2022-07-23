@@ -1,0 +1,21 @@
+thesis gbc, operation = remove, graph nodes = 100, graph edges 555, edge stream size = 20, groups size = 5, number of groups = 5
+1, 62.55078125, space
+2, 61.4375, space
+3, 61.44140625, space
+4, 61.44140625, space
+5, 61.4453125, space
+6, 61.45703125, space
+7, 61.45703125, space
+8, 61.41796875, space
+9, 61.40234375, space
+10, 61.4453125, space
+11, 61.46875, space
+12, 61.46875, space
+13, 61.46875, space
+14, 61.45703125, space
+15, 61.453125, space
+16, 61.45703125, space
+17, 61.45703125, space
+18, 61.45703125, space
+19, 61.44921875, space
+20, 61.44921875, space
