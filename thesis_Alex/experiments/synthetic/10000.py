@@ -13,7 +13,7 @@ if __name__ == '__main__':
     G_rem = setup_2("remove", edge_stream_add, category, dataset)
     edge_stream_rem, groups_rem = list(reversed(edge_stream_add)), groups_add
 
-    puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, category, dataset)
+    # puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, category, dataset)
     thesis_add_gbc(G_add, edge_stream_add, groups_add, category, dataset)
 
     puzis_state_of_the_art_add(G_add, edge_stream_add, groups_add, category, dataset, space=True)
