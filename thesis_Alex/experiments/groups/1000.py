@@ -1,19 +1,35 @@
+import networkx as nx
 from networkx.algorithms.thesis_Alex.puzis_sota_experiments import *
 from networkx.algorithms.thesis_Alex.thesis_experiments_gbc import *
 from networkx.algorithms.thesis_Alex.setup import *
+from os.path import dirname, abspath, join
+from copy import deepcopy
+
+thesis_Alex_dir = dirname(dirname(dirname(abspath(__file__))))
+groups_dir = dirname(abspath(__file__))
 
 if __name__ == '__main__':
-    category = "synthetic"
-    dataset = "1000"
-    edg_strm_siz = 100
-    grp_siz = 10
-    nm_grps = 10
+    dataset_file = join(thesis_Alex_dir, 'datasets/synthetic/1000.edges')
+    stream = join(groups_dir, '1000/50/50.stream')
+    category = "groups"
 
-    G_add, edge_stream_add, groups_add = setup("add", edg_strm_siz, grp_siz, nm_grps, category, dataset)
-    G_rem = setup_2("remove", edge_stream_add, category, dataset)
-    edge_stream_rem, groups_rem = list(reversed(edge_stream_add)), groups_add
+    G = nx.read_edgelist(dataset_file)
+    G_add = deepcopy(G)
+    G_edges = nx.read_edgelist(stream)
 
-    puzis_state_of_the_art_add_2(G_add, edge_stream_add, groups_add, category, dataset)
-    thesis_add_gbc_2(G_add, edge_stream_add, groups_add, category, dataset)
-    puzis_state_of_the_art_remove_2(G_rem, edge_stream_rem, groups_rem, category, dataset)
-    thesis_remove_gbc_2(G_rem, edge_stream_rem, groups_rem, category, dataset)
+    edge_stream_add = list(G_edges.edges())
+    edge_stream_rem = list(reversed(edge_stream_add))
+    G_add.remove_edges_from(edge_stream_add)
+
+    for i in range(1, 21):
+        groups = get_groups(G_add, i, i)
+
+        puzis_state_of_the_art_add_2(G_add, edge_stream_add, groups, category, i)
+        thesis_add_gbc_2(G_add, edge_stream_add, groups, category, i)
+        puzis_state_of_the_art_remove_2(G, edge_stream_rem, groups, category, i)
+        thesis_remove_gbc_2(G, edge_stream_rem, groups, category, i)
+
+
+
+
+
