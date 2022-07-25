@@ -24,10 +24,10 @@ if __name__ == '__main__':
     for i in range(1, 21):
         groups = get_groups(G_add, i, i)
 
-        puzis_state_of_the_art_add_2(G_add, edge_stream_add, groups, category, i)
-        thesis_add_gbc_2(G_add, edge_stream_add, groups, category, i)
-        puzis_state_of_the_art_remove_2(G, edge_stream_rem, groups, category, i)
-        thesis_remove_gbc_2(G, edge_stream_rem, groups, category, i)
+        puzis_state_of_the_art_add_2(G_add, edge_stream_add, groups, category, str(i))
+        thesis_add_gbc_2(G_add, edge_stream_add, groups, category, str(i))
+        puzis_state_of_the_art_remove_2(G, edge_stream_rem, groups, category, str(i))
+        thesis_remove_gbc_2(G, edge_stream_rem, groups, category, str(i))
 
 
 
