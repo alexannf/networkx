@@ -21,7 +21,7 @@ if __name__ == '__main__':
     edge_stream_rem = list(reversed(edge_stream_add))
     G_add.remove_edges_from(edge_stream_add)
 
-    for i in range(1, 21):
+    for i in range(11, 21):
         groups = get_groups(G_add, i, i)
 
         puzis_state_of_the_art_add_2(G_add, edge_stream_add, groups, category, str(i))
