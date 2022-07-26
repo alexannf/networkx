@@ -5,8 +5,8 @@ from networkx.algorithms.thesis_Alex.setup import *
 if __name__ == '__main__':
     category = "scalability"
     edg_strm_siz = 50
-    grp_siz = 10
-    nm_grps = 10
+    grp_siz = 5
+    nm_grps = 5
 
     for i in range(1, 31):
         G_add, edge_stream_add, groups_add = setup("add", edg_strm_siz, grp_siz, nm_grps, category, str(i))
