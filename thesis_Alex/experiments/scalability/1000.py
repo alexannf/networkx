@@ -8,7 +8,7 @@ if __name__ == '__main__':
     grp_siz = 5
     nm_grps = 5
 
-    for i in range(1, 31):
+    for i in range(20, 31):
         G_add, edge_stream_add, groups_add = setup("add", edg_strm_siz, grp_siz, nm_grps, category, str(i))
         G_rem = setup_2("remove", edge_stream_add, category, str(i))
         edge_stream_rem, groups_rem = list(reversed(edge_stream_add)), groups_add
