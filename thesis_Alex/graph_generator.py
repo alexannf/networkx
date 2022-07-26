@@ -27,7 +27,7 @@ if __name__ == "__main__":
         features_filename = join(dirname, 'datasets/scalability/' + str(i) + '.feat')
         edgelist_filename = join(dirname, 'datasets/scalability/' + str(i) + '.edges')
 
-        power_cluster = nx.powerlaw_cluster_graph(1000, i, 0.7)
+        power_cluster = nx.powerlaw_cluster_graph(500, i, 0.7)
         nx.write_edgelist(power_cluster, edgelist_filename)
         nodes, edges, deg, CC, diameter = get_graph_properties(power_cluster)
 
