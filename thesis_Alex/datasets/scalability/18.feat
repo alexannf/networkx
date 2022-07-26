@@ -1,0 +1,5 @@
+ nodes: 1000 
+ edges: 17556 
+ average degree: 35.112 
+ clustering coefficient: 0.1612211658751413 
+ diameter: 3

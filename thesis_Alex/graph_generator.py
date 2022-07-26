@@ -22,13 +22,12 @@ def print_graph_properties(n, m, avg_deg, cc, diam):
 
 
 if __name__ == "__main__":
-    num_nodes = [500, 2000, 4000]
 
-    for num in num_nodes:
-        features_filename = join(dirname, 'datasets/synthetic/' + str(num) + '.feat')
-        edgelist_filename = join(dirname, 'datasets/synthetic/' + str(num) + '.edges')
+    for i in range(1, 31):
+        features_filename = join(dirname, 'datasets/scalability/' + str(i) + '.feat')
+        edgelist_filename = join(dirname, 'datasets/scalability/' + str(i) + '.edges')
 
-        power_cluster = nx.powerlaw_cluster_graph(num, 6, 0.7)
+        power_cluster = nx.powerlaw_cluster_graph(1000, i, 0.7)
         nx.write_edgelist(power_cluster, edgelist_filename)
         nodes, edges, deg, CC, diameter = get_graph_properties(power_cluster)
 
