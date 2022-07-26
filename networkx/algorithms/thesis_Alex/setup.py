@@ -39,10 +39,10 @@ def setup(operation, edge_stream_size, group_size, num_groups, category, dataset
     now = datetime.now()
     dt = now.strftime("%Y_%d_%m_%H_%M_%S")
 
-    edgestream_filename = join(dirname, 'thesis_Alex/experiments/' + category + '/' + dataset +
-                               '/' + str(edge_stream_size) + '/' + dt + '.stream')
-    groups_filename = join(dirname, 'thesis_Alex/experiments/' + category + '/' + dataset +
-                           '/' + str(edge_stream_size) + '/' + dt + '.groups')
+    edgestream_filename = join(dirname, 'thesis_Alex/experiments/' + category +
+                               '/' + str(edge_stream_size) + '/' + dt + '_' + dataset + '.stream')
+    groups_filename = join(dirname, 'thesis_Alex/experiments/' + category +
+                           '/' + str(edge_stream_size) + '/' + dt + '_' + dataset + '.groups')
 
     G_temp = nx.Graph()
     G_temp.add_edges_from(edge_stream)
