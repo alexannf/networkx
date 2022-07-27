@@ -33,12 +33,12 @@ if __name__ == '__main__':
     # btwn_centr_sorted = sort_dict(btwn_centr)
     # pprint.pprint(btwn_centr_sorted, sort_dicts=False)
     #
-    lttr_comb = generate_node_pairs()
-    grp_btwn_cntr_all_pairs = nx.algorithms.group_betweenness_centrality(G, lttr_comb, normalized=False)
-
-    grp_btwn_dict = scores_to_dict(lttr_comb, grp_btwn_cntr_all_pairs)
-    grp_btwn_sorted = u.sort_dict(grp_btwn_dict)
-    pprint.pprint(grp_btwn_sorted, sort_dicts=False)
+    # lttr_comb = generate_node_pairs()
+    # grp_btwn_cntr_all_pairs = nx.algorithms.group_betweenness_centrality(G, lttr_comb, normalized=False)
+    #
+    # grp_btwn_dict = scores_to_dict(lttr_comb, grp_btwn_cntr_all_pairs)
+    # grp_btwn_sorted = u.sort_dict(grp_btwn_dict)
+    # pprint.pprint(grp_btwn_sorted, sort_dicts=False)
 
     GBC_control = nx.group_betweenness_centrality(G, [['D', '12'], ['D', 'L'], ['L', '2']], normalized=False)
     print("\n -----------------------------\n{}".format(GBC_control))
