@@ -27,7 +27,7 @@ def scores_to_dict(lttr_comb, grp_btwn_cntr_all_pairs):
 
 
 if __name__ == '__main__':
-    G = g.trondheim_graph()
+    G = g.g_1()
 
     # btwn_centr = nx.algorithms.betweenness_centrality(G, normalized=False)
     # btwn_centr_sorted = sort_dict(btwn_centr)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # grp_btwn_sorted = u.sort_dict(grp_btwn_dict)
     # pprint.pprint(grp_btwn_sorted, sort_dicts=False)
 
-    GBC_control = nx.group_betweenness_centrality(G, [['D', '12'], ['D', 'L'], ['L', '2']], normalized=False)
+    GBC_control = nx.group_betweenness_centrality(G, [['3', '7'], ['4', '8']], normalized=False)
     print("\n -----------------------------\n{}".format(GBC_control))
 
 
