@@ -10,8 +10,10 @@ friends_dir = dirname(abspath(__file__))
 
 if __name__ == '__main__':
     edge_stream_file = join(friends_dir, '200/2022_27_07_10_13_22.stream')
-    G_rem = nx.read_edgelist(edge_stream_file)
-    edge_stream = list(G_rem.edges())
+    dataset_file = join(thesis_Alex_dir, 'datasets/friend/friend.edges')
+    G_rem = nx.read_edgelist(dataset_file)
+    G_edges = nx.read_edgelist(edge_stream_file)
+    edge_stream = list(G_edges.edges())
     edge_stream_rem = list(reversed(edge_stream))
 
     groups_rem = [['1227', '1546', '2547', '1002', '2185', '475', '289', '290', '1392', '1034'],
