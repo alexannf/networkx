@@ -1,5 +1,6 @@
 import networkx as nx
 from os.path import dirname, abspath, join
+import matplotlib.pyplot as plt
 
 dirname = dirname(abspath(__file__))
 
@@ -23,16 +24,21 @@ def print_graph_properties(n, m, avg_deg, cc, diam):
 
 if __name__ == "__main__":
 
-    for i in range(1, 31):
-        features_filename = join(dirname, 'datasets/scalability/' + str(i) + '.feat')
-        edgelist_filename = join(dirname, 'datasets/scalability/' + str(i) + '.edges')
+    # for i in range(1, 31):
+    #     features_filename = join(dirname, 'datasets/scalability/' + str(i) + '.feat')
+    #     edgelist_filename = join(dirname, 'datasets/scalability/' + str(i) + '.edges')
+    #
+    #     power_cluster = nx.powerlaw_cluster_graph(500, i, 0.7)
+    #     nx.write_edgelist(power_cluster, edgelist_filename)
+    #     nodes, edges, deg, CC, diameter = get_graph_properties(power_cluster)
+    #
+    #     features_file = open(features_filename, "w")
+    #     features_file.write(" nodes: {} \n edges: {} \n average degree: {} \n clustering coefficient: {} \n "
+    #                         "diameter: {}".format(nodes, edges, deg, CC, diameter))
+    #     features_file.close()
+    #     print_graph_properties(nodes, edges, deg, CC, diameter)
 
-        power_cluster = nx.powerlaw_cluster_graph(500, i, 0.7)
-        nx.write_edgelist(power_cluster, edgelist_filename)
-        nodes, edges, deg, CC, diameter = get_graph_properties(power_cluster)
+    G = nx.powerlaw_cluster_graph(500, 6, 0.7)
+    nx.draw(G)
+    plt.show()
 
-        features_file = open(features_filename, "w")
-        features_file.write(" nodes: {} \n edges: {} \n average degree: {} \n clustering coefficient: {} \n "
-                            "diameter: {}".format(nodes, edges, deg, CC, diameter))
-        features_file.close()
-        print_graph_properties(nodes, edges, deg, CC, diameter)

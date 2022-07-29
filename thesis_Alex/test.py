@@ -1,6 +1,9 @@
 import networkx as nx
+import networkx.algorithms.thesis_Alex.utils.graphs as g
 
 if __name__ == '__main__':
-    G = nx.read_edgelist("C:/Users/alex/NetworkX/networkx/thesis_Alex/datasets/synthetic/3000.edges")
-    print(G.number_of_nodes())
-    print(G.number_of_edges())
+    G = g.g_2()
+    new_edge = ('5', '6')
+    operation = "remove"
+    G_new, bc, D, SP, Delta = nx.kourtellis_dynamic_bc_old(G, new_edge, operation)
+
