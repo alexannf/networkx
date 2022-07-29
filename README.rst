@@ -1,3 +1,17 @@
+Masteroppgave Alexander
+========
+Våren 2022 utviklet jeg en dynamisk "group betweenness centrality" algoritme i NetworkX rammeverket
+Mesteparten av koden jeg har utviklet finnes i:
+(root) networkx/thesis_Alex <---- programmer som skal kjøres + datasett og annen metadata
+
+(root) networkx/networkx/algorithms/thesis_Alex <---- Algoritmer og andre støttefiler
+
+Resultater fra experimenter jeg har kjørt finner du:
+(root) networkx/thesis_Alex/results
+
+resultatene er lagret til tekstfiler og hver tekstfil har en header som beskriver hvilket eksperiment som er gjort
+
+
 NetworkX
 ========
 
