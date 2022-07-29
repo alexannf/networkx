@@ -7,7 +7,8 @@ Mesteparten av koden jeg har utviklet finnes i:
 
 (root) networkx/networkx/algorithms/thesis_Alex <---- Algoritmer og andre støttefiler
 
-Resultater fra experimenter jeg har kjørt finner du:
+Resultater fra experimenter jeg har kjørt finner du her:
+
 (root) networkx/thesis_Alex/results
 
 resultatene er lagret til tekstfiler og hver tekstfil har en header som beskriver hvilket eksperiment som er gjort
