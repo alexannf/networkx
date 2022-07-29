@@ -1,14 +1,12 @@
 """Group centrality measures."""
 from copy import deepcopy
+from collections import deque
+from heapq import heappush, heappop
+from itertools import count
 
 import networkx as nx
+from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils.decorators import not_implemented_for
-from networkx.algorithms.centrality.betweenness import (
-    _single_source_shortest_path_basic,
-    _single_source_dijkstra_path_basic,
-    _accumulate_endpoints,
-)
-
 
 __all__ = [
     "group_betweenness_centrality",
@@ -20,7 +18,7 @@ __all__ = [
 ]
 
 
-def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=False):
+def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=False, xtra_data=False):
     r"""Compute the group betweenness centrality for a group of nodes.
 
     Group betweenness centrality of a group of nodes $C$ is the sum of the
@@ -56,6 +54,10 @@ def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=F
 
     endpoints : bool, optional (default=False)
       If True include the endpoints in the shortest path counts.
+
+    xtra_data : bool, optional (default=False)
+      If True, the function returns the accumulated data structures to be used for
+      dynamic group betweenness calculation
 
     Raises
     ------
@@ -124,7 +126,10 @@ def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=F
         raise nx.NodeNotFound(f"The node(s) {set_v - G.nodes} are in C but not in G.")
 
     # pre-processing
-    PB, sigma, D = _group_preprocessing(G, set_v, weight)
+    if xtra_data:
+        bc, PB, sigma, D, delta = _group_preprocessing(G, set_v, weight, True)
+    else:
+        PB, sigma, D = _group_preprocessing(G, set_v, weight)
 
     # the algorithm for each group
     for group in C:
@@ -193,14 +198,20 @@ def group_betweenness_centrality(G, C, normalized=True, weight=None, endpoints=F
 
         GBC.append(GBC_group)
     if list_of_groups:
-        return GBC
+        if xtra_data:
+            return GBC, bc, PB, D, sigma, delta
+        return GBC,
     else:
+        if xtra_data:
+            return GBC[0], bc, PB, D, sigma, delta
         return GBC[0]
 
 
-def _group_preprocessing(G, set_v, weight):
+def _group_preprocessing(G, set_v, weight, xtra_data=False):
     sigma = {}
     delta = {}
+    if xtra_data:
+        delta_dyn = {}
     D = {}
     betweenness = dict.fromkeys(G, 0)
     for s in G:
@@ -209,6 +220,8 @@ def _group_preprocessing(G, set_v, weight):
         else:  # use Dijkstra's algorithm
             S, P, sigma[s], D[s] = _single_source_dijkstra_path_basic(G, s, weight)
         betweenness, delta[s] = _accumulate_endpoints(betweenness, S, P, sigma[s], s)
+        if xtra_data:
+            delta_dyn[s] = deepcopy(delta[s])
         for i in delta[s].keys():  # add the paths from s to i and rescale sigma
             if s != i:
                 delta[s][i] += 1
@@ -234,6 +247,8 @@ def _group_preprocessing(G, set_v, weight):
                             * sigma[group_node1][group_node2]
                             / sigma[node][group_node2]
                         )
+    if xtra_data:
+        return betweenness, PB, sigma, D, delta_dyn
     return PB, sigma, D
 
 
@@ -779,3 +794,89 @@ def group_out_degree_centrality(G, S):
     so for group out-degree centrality, the graph itself is used.
     """
     return group_degree_centrality(G, S)
+
+
+def _single_source_shortest_path_basic(G, s):
+    S = []
+    P = {}
+    for v in G:
+        P[v] = []
+    sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
+    D = {}
+    sigma[s] = 1.0
+    D[s] = 0
+    Q = deque([s])
+    while Q:  # use BFS to find shortest paths
+        v = Q.popleft()
+        S.append(v)
+        Dv = D[v]
+        sigmav = sigma[v]
+        for w in G[v]:
+            if w not in D:
+                Q.append(w)
+                D[w] = Dv + 1
+            if D[w] == Dv + 1:  # this is a shortest path, count paths
+                sigma[w] += sigmav
+                P[w].append(v)  # predecessors
+    return S, P, sigma, D
+
+
+def _accumulate_basic(betweenness, S, P, sigma, s):
+    delta = dict.fromkeys(S, 0)
+    while S:
+        w = S.pop()
+        coeff = (1 + delta[w]) / sigma[w]
+        for v in P[w]:
+            delta[v] += sigma[v] * coeff
+        if w != s:
+            betweenness[w] += delta[w]
+    return betweenness, delta
+
+
+def _accumulate_endpoints(betweenness, S, P, sigma, s):
+    betweenness[s] += len(S) - 1
+    delta = dict.fromkeys(S, 0)
+    while S:
+        w = S.pop()
+        coeff = (1 + delta[w]) / sigma[w]
+        for v in P[w]:
+            delta[v] += sigma[v] * coeff
+        if w != s:
+            betweenness[w] += delta[w] + 1
+    return betweenness, delta
+
+
+def _single_source_dijkstra_path_basic(G, s, weight):
+    weight = _weight_function(G, weight)
+    # modified from Eppstein
+    S = []
+    P = {}
+    for v in G:
+        P[v] = []
+    sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
+    D = {}
+    sigma[s] = 1.0
+    push = heappush
+    pop = heappop
+    seen = {s: 0}
+    c = count()
+    Q = []  # use Q as heap with (distance,node id) tuples
+    push(Q, (0, next(c), s, s))
+    while Q:
+        (dist, _, pred, v) = pop(Q)
+        if v in D:
+            continue  # already searched this node.
+        sigma[v] += sigma[pred]  # count paths
+        S.append(v)
+        D[v] = dist
+        for w, edgedata in G[v].items():
+            vw_dist = dist + weight(v, w, edgedata)
+            if w not in D and (w not in seen or vw_dist < seen[w]):
+                seen[w] = vw_dist
+                push(Q, (vw_dist, next(c), v, w))
+                sigma[w] = 0.0
+                P[w] = [v]
+            elif vw_dist == seen[w]:  # handle equal paths
+                sigma[w] += sigma[v]
+                P[w].append(v)
+    return S, P, sigma, D
